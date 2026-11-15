@@ -186,4 +186,4 @@ export default function HomePage() {
             <div className="mt-8 border-t border-slate-200 pt-8 space-y-6">
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-
+                  <span className="text-xs font-bold uppercase text-indigo-600">{student.institute}</span>
