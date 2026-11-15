@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = "force-dynamic";
+
 import React, { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
@@ -38,7 +38,6 @@ export default function HomePage() {
   const [exams, setExams] = useState<ExamData[]>([]);
   const [attendance, setAttendance] = useState<AttendanceData[]>([]);
 
-  // Principal PIN Modal State
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState("");
   const [pinError, setPinError] = useState(false);
@@ -97,7 +96,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 via-white to-indigo-50/40">
-      {/* Top Navbar */}
       <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -125,7 +123,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <main className="flex-1 max-w-5xl mx-auto px-5 py-12 md:py-16 w-full">
         <div className="text-center max-w-3xl mx-auto space-y-5">
           <span className="inline-block px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold tracking-wide uppercase">
@@ -153,7 +150,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Live Student & Parent Portal Box */}
         <div className="mt-14 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 md:p-10">
           <div className="text-center max-w-xl mx-auto mb-6">
             <h2 className="text-2xl font-extrabold text-slate-900">Student &amp; Parent Quick Portal</h2>
@@ -188,128 +184,6 @@ export default function HomePage() {
 
           {student && (
             <div className="mt-8 border-t border-slate-200 pt-8 space-y-6">
-              {/* Student Profile Header */}
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-xs font-bold uppercase text-indigo-600">{student.institute}</span>
-                  <h3 className="text-xl font-extrabold text-slate-900">{student.student_name}</h3>
-                  <p className="text-sm text-slate-600">
-                    Reg No: <strong>{student.reg_no}</strong> • Class: <strong>{student.class_name}</strong>
-                  </p>
-                </div>
-                <div className="text-left sm:text-right">
-                  <p className="text-xs text-slate-500 font-semibold uppercase">Fee Clearance</p>
-                  <span
-                    className={`inline-block mt-1 px-4 py-1.5 rounded-full text-xs font-extrabold ${
-                      student.fee_status === "Paid"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    {student.fee_status}
-                  </span>
-                </div>
-              </div>
-
-              {/* Results & Attendance Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Exam Results */}
-                <div className="border border-slate-200 rounded-2xl p-5">
-                  <h4 className="font-bold text-slate-800 mb-3">Published Exam Results</h4>
-                  {exams.length === 0 ? (
-                    <p className="text-xs text-slate-400">Abhi koi exam result publish nahi hua hai.</p>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {exams.map((ex, i) => (
-                        <div key={i} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl text-sm">
-                          <div>
-                            <p className="font-bold text-slate-800">{ex.exam_name}</p>
-                            <p className="text-xs text-slate-500">
-                              Marks: {ex.obtained_marks} / {ex.total_marks}
-                            </p>
-                          </div>
-                          <span className="px-3 py-1 rounded-lg bg-indigo-100 text-indigo-700 font-extrabold text-xs">
-                            Grade {ex.grade}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Recent Attendance */}
-                <div className="border border-slate-200 rounded-2xl p-5">
-                  <h4 className="font-bold text-slate-800 mb-3">Recent Daily Attendance</h4>
-                  {attendance.length === 0 ? (
-                    <p className="text-xs text-slate-400">Abhi attendance record uplabdh nahi hai.</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {attendance.map((att, i) => (
-                        <div key={i} className="flex items-center justify-between bg-slate-50 px-3.5 py-2.5 rounded-xl text-sm">
-                          <span className="font-medium text-slate-700">{att.date}</span>
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                              att.status === "Present"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-rose-100 text-rose-700"
-                            }`}
-                          >
-                            {att.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-      © 2026 EduCore ERP • Designed &amp; Managed for JMCT Campus, Nashik
-
-      {/* Principal PIN Modal */}
-      {showPinModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <form onSubmit={handleAdminAccess} className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4">
-            <div>
-              <h3 className="text-lg font-extrabold text-slate-900">Principal / Staff Access</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Admin Dashboard kholne ke liye Campus PIN daalein</p>
-            </div>
-            <input
-              type="password"
-              autoFocus
-              required
-              value={pinInput}
-              onChange={(e) => {
-                setPinInput(e.target.value);
-                setPinError(false);
-              }}
-              placeholder="Enter PIN (Default: 2026)"
-              className="w-full px-4 py-3 rounded-xl border border-slate-300 text-center text-lg tracking-widest font-bold"
-            />
-            {pinError && <p className="text-xs font-semibold text-rose-600 text-center">Galat PIN! Kripya dobara koshish karein.</p>}
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowPinModal(false)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-bold"
-              >
-                Unlock Dashboard
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
-  );
-}
+                  <span className="text-
