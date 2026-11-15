@@ -269,8 +269,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} EduCore ERP • Designed &amp; Managed for JMCT Campus, Nashik
-      </footer>
+      © 2026 EduCore ERP • Designed &amp; Managed for JMCT Campus, Nashik
 
       {/* Principal PIN Modal */}
       {showPinModal && (
