@@ -58,10 +58,11 @@ export default function DashboardPage() {
   const [institute, setInstitute] = useState("JMCT International School");
   const [parentPhone, setParentPhone] = useState("");
   const [feeStatus, setFeeStatus] = useState("Pending");
-const [showBulkModal, setShowBulkModal] = useState(false);
-const [uploadingCsv, setUploadingCsv] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [uploadingCsv, setUploadingCsv] = useState(false);
+
   // Attendance State
-const [selectedDate, setSelectedDate] = useState("2026-11-15");
+  const [selectedDate, setSelectedDate] = useState("2026-11-15");
   const [attendanceMap, setAttendanceMap] = useState<Record<string, "Present" | "Absent">>({});
 
   // Exams State
@@ -137,7 +138,59 @@ const [selectedDate, setSelectedDate] = useState("2026-11-15");
     fetchStudents();
   }
 
-  // <-- YAHAN PASTE KAREIN (downloadSampleCsv aur handleCsvUpload) -->
+  function downloadSampleCsv() {
+    const csv =
+      "reg_no,student_name,class_name,institute,parent_phone,fee_status\n" +
+      "1001,Ayaan Shaikh,Class 10th,JMCT International School,9876543210,Paid\n" +
+      "1002,Sara Khan,FY B.Pharm,JMCT Pharmacy College,9876543211,Pending\n";
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "JMCT_Students_Template.csv";
+    a.click();
+  }
+
+  async function handleCsvUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCsv(true);
+
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
+    const rows = lines
+      .slice(1)
+      .map((line) => {
+        const [reg_no, student_name, class_name, inst, parent_phone, fee_status] = line
+          .split(",")
+          .map((c) => c.trim());
+        return {
+          reg_no,
+          student_name,
+          class_name,
+          institute: inst || "JMCT Campus",
+          parent_phone: parent_phone || "",
+          fee_status: fee_status === "Paid" ? "Paid" : "Pending",
+        };
+      })
+      .filter((r) => r.reg_no && r.student_name);
+
+    if (rows.length === 0) {
+      alert("CSV file mein koi valid student record nahi mila.");
+      setUploadingCsv(false);
+      return;
+    }
+
+    const { error } = await supabase.from("students").upsert(rows, { onConflict: "reg_no" });
+    setUploadingCsv(false);
+    if (error) {
+      alert("Bulk upload error: " + error.message);
+    } else {
+      alert(`${rows.length} students successfully upload ho gaye!`);
+      setShowBulkModal(false);
+      fetchStudents();
+    }
+  }
 
   async function markAttendance(student: Student, status: "Present" | "Absent") {
     setAttendanceMap((prev) => ({ ...prev, [student.reg_no]: status }));
@@ -280,13 +333,47 @@ const [selectedDate, setSelectedDate] = useState("2026-11-15");
                 <h2 className="text-2xl font-bold text-slate-900">Students & Admissions</h2>
                 <p className="text-sm text-slate-500">Manage enrollments across all JMCT institutions</p>
               </div>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition"
-              >
-                {showForm ? "Close Form" : "+ New Admission"}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setShowBulkModal(!showBulkModal)}
+                  className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition"
+                >
+                  {showBulkModal ? "Close CSV Upload" : "↑ Bulk CSV Upload"}
+                </button>
+                <button
+                  onClick={() => setShowForm(!showForm)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition"
+                >
+                  {showForm ? "Close Form" : "+ New Admission"}
+                </button>
+              </div>
             </div>
+
+            {showBulkModal && (
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-slate-800">Bulk Upload Students (Excel / CSV)</h3>
+                    <p className="text-xs text-slate-500">Excel file ko CSV (Comma delimited) mein save karke upload karein</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={downloadSampleCsv}
+                    className="text-xs font-bold text-indigo-600 hover:underline"
+                  >
+                    ↓ Download Sample CSV Template
+                  </button>
+                </div>
+                <input
+                  type="file"
+                  accept=".csv"
+                  disabled={uploadingCsv}
+                  onChange={handleCsvUpload}
+                  className="block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                />
+                {uploadingCsv && <p className="text-xs font-semibold text-indigo-600">Uploading records to Supabase...</p>}
+              </div>
+            )}
 
             {showForm && (
               <form onSubmit={handleAddStudent} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
