@@ -58,7 +58,8 @@ export default function DashboardPage() {
   const [institute, setInstitute] = useState("JMCT International School");
   const [parentPhone, setParentPhone] = useState("");
   const [feeStatus, setFeeStatus] = useState("Pending");
-
+const [showBulkModal, setShowBulkModal] = useState(false);
+const [uploadingCsv, setUploadingCsv] = useState(false);
   // Attendance State
 const [selectedDate, setSelectedDate] = useState("2026-11-15");
   const [attendanceMap, setAttendanceMap] = useState<Record<string, "Present" | "Absent">>({});
@@ -135,6 +136,8 @@ const [selectedDate, setSelectedDate] = useState("2026-11-15");
     await supabase.from("students").delete().eq("reg_no", reg_no);
     fetchStudents();
   }
+
+  // <-- YAHAN PASTE KAREIN (downloadSampleCsv aur handleCsvUpload) -->
 
   async function markAttendance(student: Student, status: "Present" | "Absent") {
     setAttendanceMap((prev) => ({ ...prev, [student.reg_no]: status }));
