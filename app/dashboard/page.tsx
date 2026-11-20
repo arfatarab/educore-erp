@@ -77,7 +77,8 @@ export default function DashboardPage() {
   const [uploadingCsv, setUploadingCsv] = useState(false);
 
   // Attendance State
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+const [selectedDate, setSelectedDate] = useState("");
+useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []);
   const [attendanceMap, setAttendanceMap] = useState<Record<string, "Present" | "Absent">>({});
 
   // Exams State
