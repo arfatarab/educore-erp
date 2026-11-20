@@ -33,16 +33,18 @@ interface CampusSettings {
   institute_name: string;
   city_address: string;
   admin_pin: string;
+  staff_pin: string;
   branches: string;
 }
 
 export default function HomePage() {
   const router = useRouter();
   const [settings, setSettings] = useState<CampusSettings>({
-    institute_name: "EduCore Demo Campus",
+    institute_name: "JMCT Campus",
     city_address: "Nashik, Maharashtra",
     admin_pin: "2026",
-    branches: "Main School • Junior College • Degree College",
+    staff_pin: "1234",
+    branches: "JMCT International School • JMCT Pharmacy College • JMCT Polytechnic College",
   });
 
   const [searchReg, setSearchReg] = useState("");
@@ -64,6 +66,7 @@ export default function HomePage() {
           institute_name: data.institute_name,
           city_address: data.city_address,
           admin_pin: data.admin_pin,
+          staff_pin: data.staff_pin || "1234",
           branches: data.branches.split(",").map((b: string) => b.trim()).filter(Boolean).join(" • "),
         });
       }
@@ -117,6 +120,10 @@ export default function HomePage() {
   function handleAdminAccess(e: React.FormEvent) {
     e.preventDefault();
     if (pinInput === settings.admin_pin) {
+      localStorage.setItem("educore_role", "principal");
+      router.push("/dashboard");
+    } else if (pinInput === settings.staff_pin) {
+      localStorage.setItem("educore_role", "teacher");
       router.push("/dashboard");
     } else {
       setPinError(true);
@@ -149,7 +156,7 @@ export default function HomePage() {
             }}
             className="bg-slate-900 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition"
           >
-            Principal / Staff Login
+            Principal / Teacher Login
           </button>
         </div>
       </header>
@@ -164,7 +171,7 @@ export default function HomePage() {
             <span className="text-indigo-600">One Unified Portal</span>
           </h1>
           <p className="text-base md:text-lg text-slate-600">
-            Admissions, Smart Daily Attendance, Digital Report Cards, aur Instant Fee Verification — sab kuch ek fast aur secure cloud platform par.
+            Admissions, Smart Daily Attendance, Digital Report Cards, aur Instant Fee Receipts — sab kuch ek fast aur secure cloud platform par.
           </p>
 
           <div className="pt-2 flex flex-wrap justify-center gap-3">
@@ -176,7 +183,7 @@ export default function HomePage() {
               }}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-7 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/25 transition"
             >
-              Open Principal Dashboard →
+              Open Campus Dashboard →
             </button>
           </div>
         </div>
@@ -298,9 +305,9 @@ export default function HomePage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <form onSubmit={handleAdminAccess} className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4">
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900">Principal / Staff Access</h3>
+              <h3 className="text-lg font-extrabold text-slate-900">Principal / Teacher Login</h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                {settings.institute_name} Dashboard kholne ke liye PIN daalein
+                Principal PIN ya Teacher Staff PIN daal kar login karein
               </p>
             </div>
             <input
@@ -312,7 +319,7 @@ export default function HomePage() {
                 setPinInput(e.target.value);
                 setPinError(false);
               }}
-              placeholder="Enter Campus PIN"
+              placeholder="Enter PIN (Admin / Teacher)"
               className="w-full px-4 py-3 rounded-xl border border-slate-300 text-center text-lg tracking-widest font-bold"
             />
             {pinError && <p className="text-xs font-semibold text-rose-600 text-center">Galat PIN! Kripya dobara koshish karein.</p>}
@@ -328,7 +335,7 @@ export default function HomePage() {
                 type="submit"
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-bold"
               >
-                Unlock Dashboard
+                Unlock Portal
               </button>
             </div>
           </form>

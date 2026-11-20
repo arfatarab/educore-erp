@@ -40,22 +40,24 @@ interface CampusSettings {
   institute_name: string;
   city_address: string;
   admin_pin: string;
+  staff_pin: string;
   branches: string;
 }
 
 export default function DashboardPage() {
+  const [role, setRole] = useState<"principal" | "teacher">("principal");
   const [activeTab, setActiveTab] = useState<"students" | "attendance" | "exams" | "fees" | "settings">("students");
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterInstitute, setFilterInstitute] = useState("All");
 
-  // White-Label Campus Settings State
   const [settings, setSettings] = useState<CampusSettings>({
-    institute_name: "EduCore Demo Campus",
+    institute_name: "JMCT Campus",
     city_address: "Nashik, Maharashtra",
     admin_pin: "2026",
-    branches: "Main School, Junior College, Degree College",
+    staff_pin: "1234",
+    branches: "JMCT International School, JMCT Pharmacy College, JMCT Polytechnic College",
   });
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -65,7 +67,6 @@ export default function DashboardPage() {
     .filter(Boolean);
   const availableInstitutes = [settings.institute_name, ...branchList.filter((b) => b !== settings.institute_name)];
 
-  // Student Form State
   const [showForm, setShowForm] = useState(false);
   const [regNo, setRegNo] = useState("");
   const [studentName, setStudentName] = useState("");
@@ -76,18 +77,28 @@ export default function DashboardPage() {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
 
-  // Attendance State
-const [selectedDate, setSelectedDate] = useState("");
-useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []);
+  const [selectedDate, setSelectedDate] = useState("");
+  useEffect(() => {
+    setSelectedDate(new Date().toISOString().split("T")[0]);
+    const savedRole = localStorage.getItem("educore_role");
+    if (savedRole === "teacher") {
+      setRole("teacher");
+      setActiveTab("attendance");
+    }
+  }, []);
   const [attendanceMap, setAttendanceMap] = useState<Record<string, "Present" | "Absent">>({});
 
-  // Exams State
   const [results, setResults] = useState<ExamResult[]>([]);
   const [examRegNo, setExamRegNo] = useState("");
   const [examName, setExamName] = useState("Annual Examination 2026");
   const [totalMarks, setTotalMarks] = useState("500");
   const [obtainedMarks, setObtainedMarks] = useState("");
   const [selectedMarksheet, setSelectedMarksheet] = useState<ExamResult | null>(null);
+
+  const [receiptStudent, setReceiptStudent] = useState<Student | null>(null);
+  const [receiptAmount, setReceiptAmount] = useState("15000");
+  const [receiptMode, setReceiptMode] = useState("Cash / UPI");
+  const [receiptTerm, setReceiptTerm] = useState("Academic Fee 2026-27");
 
   useEffect(() => {
     fetchSettings();
@@ -96,7 +107,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
   }, []);
 
   useEffect(() => {
-    fetchAttendance(selectedDate);
+    if (selectedDate) fetchAttendance(selectedDate);
   }, [selectedDate]);
 
   async function fetchSettings() {
@@ -106,6 +117,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
         institute_name: data.institute_name,
         city_address: data.city_address,
         admin_pin: data.admin_pin,
+        staff_pin: data.staff_pin || "1234",
         branches: data.branches,
       });
       setInstitute(data.institute_name);
@@ -120,6 +132,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
       institute_name: settings.institute_name.trim(),
       city_address: settings.city_address.trim(),
       admin_pin: settings.admin_pin.trim(),
+      staff_pin: settings.staff_pin.trim(),
       branches: settings.branches.trim(),
     });
     setSavingSettings(false);
@@ -127,7 +140,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
       alert("Settings save error: " + error.message);
     } else {
       setInstitute(settings.institute_name.trim());
-      alert("Campus Branding & Settings saved successfully!");
+      alert("Campus Branding, Principal PIN & Teacher PIN saved!");
     }
   }
 
@@ -309,26 +322,36 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
   const pendingCount = students.length - paidCount;
   const presentTodayCount = Object.values(attendanceMap).filter((v) => v === "Present").length;
 
+  const navItems =
+    role === "teacher"
+      ? [
+          { id: "attendance", label: "Daily Attendance" },
+          { id: "exams", label: "Exams & Report Cards" },
+        ]
+      : [
+          { id: "students", label: "Students & Admissions" },
+          { id: "attendance", label: "Daily Attendance" },
+          { id: "exams", label: "Exams & Report Cards" },
+          { id: "fees", label: "Fees & Accounts" },
+          { id: "settings", label: "⚙ Campus Settings" },
+        ];
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-5 shrink-0">
+      <aside className="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-5 shrink-0 print:hidden">
         <div>
           <div className="mb-8">
             <h1 className="text-2xl font-extrabold tracking-tight text-white">
               EduCore<span className="text-indigo-400">ERP</span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1">{settings.institute_name} • Principal Panel</p>
+            <p className="text-xs text-slate-400 mt-1">
+              {settings.institute_name} • {role === "teacher" ? "Teacher Panel" : "Principal Panel"}
+            </p>
           </div>
 
           <nav className="space-y-2">
-            {[
-              { id: "students", label: "Students & Admissions" },
-              { id: "attendance", label: "Daily Attendance" },
-              { id: "exams", label: "Exams & Report Cards" },
-              { id: "fees", label: "Fees & Accounts" },
-              { id: "settings", label: "⚙ Campus Settings" },
-            ].map((item) => (
+            {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as typeof activeTab)}
@@ -346,7 +369,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
 
         <div className="pt-6 border-t border-slate-800 mt-8">
           <Link href="/" className="text-xs text-slate-400 hover:text-white transition">
-            ← Back to Home / Portal
+            ← Logout / Back to Portal
           </Link>
         </div>
       </aside>
@@ -354,7 +377,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-8 overflow-y-auto">
         {/* Top Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 print:hidden">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <p className="text-xs font-medium text-slate-500 uppercase">Total Students</p>
             <p className="text-3xl font-extrabold text-slate-900 mt-1">{students.length}</p>
@@ -365,20 +388,24 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
             <p className="text-3xl font-extrabold text-indigo-600 mt-1">{presentTodayCount}</p>
             <p className="text-xs text-slate-500 mt-1">Marked Today</p>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase">Fees Paid</p>
-            <p className="text-3xl font-extrabold text-emerald-600 mt-1">{paidCount}</p>
-            <p className="text-xs text-slate-500 mt-1">Cleared Accounts</p>
-          </div>
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase">Fees Pending</p>
-            <p className="text-3xl font-extrabold text-amber-600 mt-1">{pendingCount}</p>
-            <p className="text-xs text-slate-500 mt-1">Action Required</p>
-          </div>
+          {role === "principal" && (
+            <>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-medium text-slate-500 uppercase">Fees Paid</p>
+                <p className="text-3xl font-extrabold text-emerald-600 mt-1">{paidCount}</p>
+                <p className="text-xs text-slate-500 mt-1">Cleared Accounts</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-medium text-slate-500 uppercase">Fees Pending</p>
+                <p className="text-3xl font-extrabold text-amber-600 mt-1">{pendingCount}</p>
+                <p className="text-xs text-slate-500 mt-1">Action Required</p>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* TAB 1: STUDENTS & ADMISSIONS */}
-        {activeTab === "students" && (
+        {/* TAB 1: STUDENTS & ADMISSIONS (Principal Only) */}
+        {activeTab === "students" && role === "principal" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -502,7 +529,6 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
               </form>
             )}
 
-            {/* Search & Filter Bar */}
             <div className="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
@@ -523,7 +549,6 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
               </select>
             </div>
 
-            {/* Students Table */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -657,12 +682,12 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
         {/* TAB 3: EXAMS & REPORT CARDS */}
         {activeTab === "exams" && (
           <div className="space-y-6">
-            <div>
+            <div className="print:hidden">
               <h2 className="text-2xl font-bold text-slate-900">Exams & Report Cards</h2>
               <p className="text-sm text-slate-500">Publish exam marks and generate instant digital marksheets</p>
             </div>
 
-            <form onSubmit={handleAddResult} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+            <form onSubmit={handleAddResult} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-5 gap-4 items-end print:hidden">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">Student Reg No. *</label>
                 <input
@@ -708,7 +733,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
               </button>
             </form>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto print:hidden">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-500 uppercase">
@@ -748,7 +773,6 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
               </table>
             </div>
 
-            {/* Official Printable Marksheet Modal */}
             {selectedMarksheet && (
               <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
                 <div className="bg-white max-w-lg w-full rounded-2xl p-8 border-4 border-indigo-600 shadow-2xl space-y-5">
@@ -770,12 +794,12 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                       {((selectedMarksheet.obtained_marks / selectedMarksheet.total_marks) * 100).toFixed(1)}%)
                     </span>
                   </div>
-                  <div className="flex justify-between items-center pt-4">
+                  <div className="flex justify-between items-center pt-4 print:hidden">
                     <button onClick={() => setSelectedMarksheet(null)} className="text-sm font-semibold text-slate-500 hover:text-slate-800">
                       Close
                     </button>
                     <button onClick={() => window.print()} className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-semibold">
-                      Print Marksheet
+                      Print / Save PDF
                     </button>
                   </div>
                 </div>
@@ -784,15 +808,15 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
           </div>
         )}
 
-        {/* TAB 4: FEES & ACCOUNTS */}
-        {activeTab === "fees" && (
+        {/* TAB 4: FEES & ACCOUNTS (Principal Only) */}
+        {activeTab === "fees" && role === "principal" && (
           <div className="space-y-6">
-            <div>
+            <div className="print:hidden">
               <h2 className="text-2xl font-bold text-slate-900">Fees & Accounts Management</h2>
-              <p className="text-sm text-slate-500">Toggle fee clearance status and send direct WhatsApp reminders</p>
+              <p className="text-sm text-slate-500">Toggle fee status, print official receipts, and send WhatsApp reminders</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto print:hidden">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-500 uppercase">
@@ -808,7 +832,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                     const cleanPhone = s.parent_phone?.replace(/\D/g, "") || "";
                     const waPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
                     const waText = encodeURIComponent(
-                      `Assalamu Alaikum, Reminder from ${s.institute}: Fee status for ${s.student_name} (Reg No: ${s.reg_no}) is currently ${s.fee_status}. Kindly clear dues at the campus office.`
+                      `Assalamu Alaikum, Update from ${s.institute}: Fee status for ${s.student_name} (Reg No: ${s.reg_no}) is ${s.fee_status}.`
                     );
 
                     return (
@@ -830,6 +854,12 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                           >
                             Mark {s.fee_status === "Paid" ? "Pending" : "Paid"}
                           </button>
+                          <button
+                            onClick={() => setReceiptStudent(s)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-700"
+                          >
+                            Print Receipt
+                          </button>
                           {waPhone && (
                             <a
                               href={`https://wa.me/${waPhone}?text=${waText}`}
@@ -837,7 +867,7 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                               rel="noreferrer"
                               className="inline-block px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
                             >
-                              WhatsApp Parent
+                              WhatsApp
                             </a>
                           )}
                         </td>
@@ -847,15 +877,109 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                 </tbody>
               </table>
             </div>
+
+            {receiptStudent && (
+              <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+                <div className="bg-white max-w-lg w-full rounded-2xl p-8 border-2 border-slate-900 shadow-2xl space-y-5">
+                  <div className="text-center border-b-2 border-dashed border-slate-300 pb-4">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-700">Official Fee Receipt</p>
+                    <h3 className="text-2xl font-extrabold text-slate-900 mt-1">{receiptStudent.institute}</h3>
+                    <p className="text-xs text-slate-500">{settings.city_address}</p>
+                    <p className="text-xs font-semibold text-slate-600 mt-1">
+                      Receipt No: <strong>REC-{receiptStudent.reg_no}-2026</strong> • Date: <strong>{selectedDate}</strong>
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-slate-500 text-xs">Student Name:</span>
+                      <strong className="block text-slate-900">{receiptStudent.student_name}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-xs">Register No.:</span>
+                      <strong className="block text-indigo-600">{receiptStudent.reg_no}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-xs">Class / Course:</span>
+                      <strong className="block text-slate-900">{receiptStudent.class_name}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-xs">Fee Status:</span>
+                      <strong className="block text-emerald-700">{receiptStudent.fee_status}</strong>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 print:hidden">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase">Amount (₹)</label>
+                      <input
+                        value={receiptAmount}
+                        onChange={(e) => setReceiptAmount(e.target.value)}
+                        className="w-full mt-0.5 px-2 py-1 text-xs font-bold border border-slate-300 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase">Payment Mode</label>
+                      <input
+                        value={receiptMode}
+                        onChange={(e) => setReceiptMode(e.target.value)}
+                        className="w-full mt-0.5 px-2 py-1 text-xs font-bold border border-slate-300 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase">Fee Term</label>
+                      <input
+                        value={receiptTerm}
+                        onChange={(e) => setReceiptTerm(e.target.value)}
+                        className="w-full mt-0.5 px-2 py-1 text-xs font-bold border border-slate-300 rounded"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold text-slate-700">{receiptTerm}</p>
+                      <p className="text-[11px] text-slate-500">Mode: {receiptMode}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[11px] text-slate-500 uppercase font-bold">Total Paid</p>
+                      <p className="text-2xl font-extrabold text-emerald-700">₹ {receiptAmount}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-end pt-6 text-xs text-slate-500">
+                    <span>Generated via EduCore ERP</span>
+                    <span className="border-t border-slate-400 pt-1 px-4 font-semibold text-slate-700">
+                      Principal / Accountant Sign
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-200 print:hidden">
+                    <button
+                      onClick={() => setReceiptStudent(null)}
+                      className="text-sm font-semibold text-slate-500 hover:text-slate-800"
+                    >
+                      Close
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-bold"
+                    >
+                      Print / Save Receipt PDF
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* TAB 5: WHITE-LABEL CAMPUS SETTINGS */}
-        {activeTab === "settings" && (
+        {/* TAB 5: WHITE-LABEL CAMPUS SETTINGS (Principal Only) */}
+        {activeTab === "settings" && role === "principal" && (
           <div className="space-y-6 max-w-2xl">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">White-Label Campus Settings</h2>
-              <p className="text-sm text-slate-500">Customize institute branding, branches, and Principal PIN without touching code</p>
+              <p className="text-sm text-slate-500">Customize institute branding, branches, and Principal/Teacher PINs</p>
             </div>
 
             <form onSubmit={handleSaveSettings} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -865,7 +989,6 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                   required
                   value={settings.institute_name}
                   onChange={(e) => setSettings({ ...settings, institute_name: e.target.value })}
-                  placeholder="e.g. Al-Falah International School"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
                 />
               </div>
@@ -876,7 +999,6 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                   required
                   value={settings.city_address}
                   onChange={(e) => setSettings({ ...settings, city_address: e.target.value })}
-                  placeholder="e.g. Nashik, Maharashtra"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
                 />
               </div>
@@ -886,21 +1008,29 @@ useEffect(() => { setSelectedDate(new Date().toISOString().split("T")[0]); }, []
                 <input
                   value={settings.branches}
                   onChange={(e) => setSettings({ ...settings, branches: e.target.value })}
-                  placeholder="e.g. Primary School, High School, Junior College"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
                 />
-                <p className="text-xs text-slate-400 mt-1">Har branch ko comma (,) se alag likhein — yeh Admission aur Filter dropdown mein dikhengi.</p>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Principal / Admin Login PIN *</label>
-                <input
-                  required
-                  value={settings.admin_pin}
-                  onChange={(e) => setSettings({ ...settings, admin_pin: e.target.value })}
-                  placeholder="e.g. 2026"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Principal / Admin PIN (Full Access) *</label>
+                  <input
+                    required
+                    value={settings.admin_pin}
+                    onChange={(e) => setSettings({ ...settings, admin_pin: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Teacher / Staff PIN (Attendance & Marks) *</label>
+                  <input
+                    required
+                    value={settings.staff_pin}
+                    onChange={(e) => setSettings({ ...settings, staff_pin: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                  />
+                </div>
               </div>
 
               <div className="pt-2">
