@@ -36,33 +36,48 @@ interface ExamResult {
   grade: string;
 }
 
-const INSTITUTES = [
-  "JMCT Campus",
-  "JMCT International School",
-  "JMCT Pharmacy College",
-  "JMCT Polytechnic College",
-];
+interface CampusSettings {
+  institute_name: string;
+  city_address: string;
+  admin_pin: string;
+  branches: string;
+}
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<"students" | "attendance" | "exams" | "fees">("students");
+  const [activeTab, setActiveTab] = useState<"students" | "attendance" | "exams" | "fees" | "settings">("students");
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterInstitute, setFilterInstitute] = useState("All");
+
+  // White-Label Campus Settings State
+  const [settings, setSettings] = useState<CampusSettings>({
+    institute_name: "EduCore Demo Campus",
+    city_address: "Nashik, Maharashtra",
+    admin_pin: "2026",
+    branches: "Main School, Junior College, Degree College",
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  const branchList = settings.branches
+    .split(",")
+    .map((b) => b.trim())
+    .filter(Boolean);
+  const availableInstitutes = [settings.institute_name, ...branchList.filter((b) => b !== settings.institute_name)];
 
   // Student Form State
   const [showForm, setShowForm] = useState(false);
   const [regNo, setRegNo] = useState("");
   const [studentName, setStudentName] = useState("");
   const [className, setClassName] = useState("");
-  const [institute, setInstitute] = useState("JMCT International School");
+  const [institute, setInstitute] = useState("");
   const [parentPhone, setParentPhone] = useState("");
   const [feeStatus, setFeeStatus] = useState("Pending");
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
 
   // Attendance State
-  const [selectedDate, setSelectedDate] = useState("2026-11-15");
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [attendanceMap, setAttendanceMap] = useState<Record<string, "Present" | "Absent">>({});
 
   // Exams State
@@ -74,6 +89,7 @@ export default function DashboardPage() {
   const [selectedMarksheet, setSelectedMarksheet] = useState<ExamResult | null>(null);
 
   useEffect(() => {
+    fetchSettings();
     fetchStudents();
     fetchResults();
   }, []);
@@ -81,6 +97,38 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchAttendance(selectedDate);
   }, [selectedDate]);
+
+  async function fetchSettings() {
+    const { data } = await supabase.from("campus_settings").select("*").eq("id", 1).single();
+    if (data) {
+      setSettings({
+        institute_name: data.institute_name,
+        city_address: data.city_address,
+        admin_pin: data.admin_pin,
+        branches: data.branches,
+      });
+      setInstitute(data.institute_name);
+    }
+  }
+
+  async function handleSaveSettings(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingSettings(true);
+    const { error } = await supabase.from("campus_settings").upsert({
+      id: 1,
+      institute_name: settings.institute_name.trim(),
+      city_address: settings.city_address.trim(),
+      admin_pin: settings.admin_pin.trim(),
+      branches: settings.branches.trim(),
+    });
+    setSavingSettings(false);
+    if (error) {
+      alert("Settings save error: " + error.message);
+    } else {
+      setInstitute(settings.institute_name.trim());
+      alert("Campus Branding & Settings saved successfully!");
+    }
+  }
 
   async function fetchStudents() {
     setLoading(true);
@@ -114,7 +162,7 @@ export default function DashboardPage() {
         reg_no: regNo.trim(),
         student_name: studentName.trim(),
         class_name: className.trim(),
-        institute,
+        institute: institute || settings.institute_name,
         parent_phone: parentPhone.trim(),
         fee_status: feeStatus,
       },
@@ -139,15 +187,17 @@ export default function DashboardPage() {
   }
 
   function downloadSampleCsv() {
+    const defaultBranch = availableInstitutes[0] || settings.institute_name;
+    const secondBranch = availableInstitutes[1] || defaultBranch;
     const csv =
       "reg_no,student_name,class_name,institute,parent_phone,fee_status\n" +
-      "1001,Ayaan Shaikh,Class 10th,JMCT International School,9876543210,Paid\n" +
-      "1002,Sara Khan,FY B.Pharm,JMCT Pharmacy College,9876543211,Pending\n";
+      `1001,Ayaan Shaikh,Class 10th,${defaultBranch},9876543210,Paid\n` +
+      `1002,Sara Khan,Class 12th,${secondBranch},9876543211,Pending\n`;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "JMCT_Students_Template.csv";
+    a.download = `${settings.institute_name.replace(/\s+/g, "_")}_Students_Template.csv`;
     a.click();
   }
 
@@ -168,7 +218,7 @@ export default function DashboardPage() {
           reg_no,
           student_name,
           class_name,
-          institute: inst || "JMCT Campus",
+          institute: inst || settings.institute_name,
           parent_phone: parent_phone || "",
           fee_status: fee_status === "Paid" ? "Paid" : "Pending",
         };
@@ -267,7 +317,7 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-extrabold tracking-tight text-white">
               EduCore<span className="text-indigo-400">ERP</span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1">JMCT Campus • Principal Panel</p>
+            <p className="text-xs text-slate-400 mt-1">{settings.institute_name} • Principal Panel</p>
           </div>
 
           <nav className="space-y-2">
@@ -276,6 +326,7 @@ export default function DashboardPage() {
               { id: "attendance", label: "Daily Attendance" },
               { id: "exams", label: "Exams & Report Cards" },
               { id: "fees", label: "Fees & Accounts" },
+              { id: "settings", label: "⚙ Campus Settings" },
             ].map((item) => (
               <button
                 key={item.id}
@@ -331,7 +382,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900">Students & Admissions</h2>
-                <p className="text-sm text-slate-500">Manage enrollments across all JMCT institutions</p>
+                <p className="text-sm text-slate-500">Manage enrollments across {settings.institute_name}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -385,7 +436,7 @@ export default function DashboardPage() {
                       required
                       value={regNo}
                       onChange={(e) => setRegNo(e.target.value)}
-                      placeholder="e.g. JMCT-2026-01"
+                      placeholder="e.g. 2026-01"
                       className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm"
                     />
                   </div>
@@ -412,11 +463,11 @@ export default function DashboardPage() {
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1">Institute / Branch *</label>
                     <select
-                      value={institute}
+                      value={institute || availableInstitutes[0]}
                       onChange={(e) => setInstitute(e.target.value)}
                       className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm bg-white"
                     >
-                      {INSTITUTES.map((inst) => (
+                      {availableInstitutes.map((inst) => (
                         <option key={inst} value={inst}>{inst}</option>
                       ))}
                     </select>
@@ -465,7 +516,7 @@ export default function DashboardPage() {
                 className="px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white"
               >
                 <option value="All">All Campuses / Institutes</option>
-                {INSTITUTES.map((inst) => (
+                {availableInstitutes.map((inst) => (
                   <option key={inst} value={inst}>{inst}</option>
                 ))}
               </select>
@@ -703,7 +754,7 @@ export default function DashboardPage() {
                   <div className="text-center border-b pb-4">
                     <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">Official Statement of Marks</p>
                     <h3 className="text-2xl font-extrabold text-slate-900 mt-1">{selectedMarksheet.institute}</h3>
-                    <p className="text-xs text-slate-500">Nashik, Maharashtra • {selectedMarksheet.exam_name}</p>
+                    <p className="text-xs text-slate-500">{settings.city_address} • {selectedMarksheet.exam_name}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div><span className="text-slate-500">Student Name:</span> <strong className="block text-slate-900">{selectedMarksheet.student_name}</strong></div>
@@ -795,6 +846,72 @@ export default function DashboardPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* TAB 5: WHITE-LABEL CAMPUS SETTINGS */}
+        {activeTab === "settings" && (
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">White-Label Campus Settings</h2>
+              <p className="text-sm text-slate-500">Customize institute branding, branches, and Principal PIN without touching code</p>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Institute / School / Madrasa Name *</label>
+                <input
+                  required
+                  value={settings.institute_name}
+                  onChange={(e) => setSettings({ ...settings, institute_name: e.target.value })}
+                  placeholder="e.g. Al-Falah International School"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">City & State Address *</label>
+                <input
+                  required
+                  value={settings.city_address}
+                  onChange={(e) => setSettings({ ...settings, city_address: e.target.value })}
+                  placeholder="e.g. Nashik, Maharashtra"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Branches / Wings (Comma Separated)</label>
+                <input
+                  value={settings.branches}
+                  onChange={(e) => setSettings({ ...settings, branches: e.target.value })}
+                  placeholder="e.g. Primary School, High School, Junior College"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                />
+                <p className="text-xs text-slate-400 mt-1">Har branch ko comma (,) se alag likhein — yeh Admission aur Filter dropdown mein dikhengi.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Principal / Admin Login PIN *</label>
+                <input
+                  required
+                  value={settings.admin_pin}
+                  onChange={(e) => setSettings({ ...settings, admin_pin: e.target.value })}
+                  placeholder="e.g. 2026"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={savingSettings}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition"
+                >
+                  {savingSettings ? "Saving..." : "Save Campus Settings"}
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </main>

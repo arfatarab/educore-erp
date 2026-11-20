@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
@@ -29,8 +29,22 @@ interface AttendanceData {
   status: string;
 }
 
+interface CampusSettings {
+  institute_name: string;
+  city_address: string;
+  admin_pin: string;
+  branches: string;
+}
+
 export default function HomePage() {
   const router = useRouter();
+  const [settings, setSettings] = useState<CampusSettings>({
+    institute_name: "EduCore Demo Campus",
+    city_address: "Nashik, Maharashtra",
+    admin_pin: "2026",
+    branches: "Main School • Junior College • Degree College",
+  });
+
   const [searchReg, setSearchReg] = useState("");
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -41,6 +55,21 @@ export default function HomePage() {
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState("");
   const [pinError, setPinError] = useState(false);
+
+  useEffect(() => {
+    async function loadCampusSettings() {
+      const { data } = await supabase.from("campus_settings").select("*").eq("id", 1).single();
+      if (data) {
+        setSettings({
+          institute_name: data.institute_name,
+          city_address: data.city_address,
+          admin_pin: data.admin_pin,
+          branches: data.branches.split(",").map((b: string) => b.trim()).filter(Boolean).join(" • "),
+        });
+      }
+    }
+    loadCampusSettings();
+  }, []);
 
   async function handleStudentLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -87,7 +116,7 @@ export default function HomePage() {
 
   function handleAdminAccess(e: React.FormEvent) {
     e.preventDefault();
-    if (pinInput === "2026") {
+    if (pinInput === settings.admin_pin) {
       router.push("/dashboard");
     } else {
       setPinError(true);
@@ -100,13 +129,15 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-indigo-600/20">
-              E
+              {settings.institute_name.charAt(0).toUpperCase()}
             </div>
             <div>
               <span className="text-xl font-extrabold tracking-tight text-slate-900">
                 EduCore<span className="text-indigo-600">ERP</span>
               </span>
-              <p className="text-[11px] font-medium text-slate-500 -mt-1">JMCT Campus • Nashik</p>
+              <p className="text-[11px] font-medium text-slate-500 -mt-1">
+                {settings.institute_name} • {settings.city_address}
+              </p>
             </div>
           </div>
 
@@ -126,7 +157,7 @@ export default function HomePage() {
       <main className="flex-1 max-w-5xl mx-auto px-5 py-12 md:py-16 w-full">
         <div className="text-center max-w-3xl mx-auto space-y-5">
           <span className="inline-block px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold tracking-wide uppercase">
-            JMCT International School • Pharmacy • Polytechnic
+            {settings.branches || settings.institute_name}
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
             Manage Your School, College &amp; Madrasa in{" "}
@@ -260,7 +291,7 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-        © 2026 EduCore ERP • Designed &amp; Managed for JMCT Campus, Nashik
+        © 2026 EduCore ERP • Designed &amp; Managed for {settings.institute_name}, {settings.city_address}
       </footer>
 
       {showPinModal && (
@@ -268,7 +299,9 @@ export default function HomePage() {
           <form onSubmit={handleAdminAccess} className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4">
             <div>
               <h3 className="text-lg font-extrabold text-slate-900">Principal / Staff Access</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Admin Dashboard kholne ke liye Campus PIN daalein</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {settings.institute_name} Dashboard kholne ke liye PIN daalein
+              </p>
             </div>
             <input
               type="password"
@@ -279,7 +312,7 @@ export default function HomePage() {
                 setPinInput(e.target.value);
                 setPinError(false);
               }}
-              placeholder="Enter PIN (Default: 2026)"
+              placeholder="Enter Campus PIN"
               className="w-full px-4 py-3 rounded-xl border border-slate-300 text-center text-lg tracking-widest font-bold"
             />
             {pinError && <p className="text-xs font-semibold text-rose-600 text-center">Galat PIN! Kripya dobara koshish karein.</p>}
