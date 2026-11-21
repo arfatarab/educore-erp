@@ -142,6 +142,12 @@ interface FeePaymentRecord {
   paidAt: string;
 }
 
+interface AuthSession {
+  role: AccountRole;
+  identifier: string;
+  label: string;
+}
+
 const STORAGE_KEYS = {
   peon: "jmct_erp_peon_tasks_v1",
   gate: "jmct_erp_gate_passes_v1",
@@ -152,6 +158,7 @@ const STORAGE_KEYS = {
   hr: "jmct_erp_hr_staff_v1",
   notifications: "jmct_erp_notifications_v1",
   payments: "jmct_erp_fee_payments_v1",
+  auth: "jmct_erp_auth_session_v1",
 };
 
 const ACADEMIC_YEARS = ["2026-27", "2025-26", "2024-25"];
@@ -608,6 +615,18 @@ function readStorage<T>(key: string, fallback: T): T {
   }
 }
 
+function readAuthStorage(): AuthSession | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.auth);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as AuthSession;
+    return parsed && parsed.role ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function mapRowToStudent(row: Record<string, unknown>): Student {
   const rawWing = String(row.wing || "School");
   const wing: Wing =
@@ -658,6 +677,10 @@ export default function JMCTCampusERP() {
   const [dbStatus, setDbStatus] = useState<"connecting" | "live" | "local">("connecting");
   const [dbError, setDbError] = useState<string>("");
   const [tickerIdx, setTickerIdx] = useState(0);
+
+  // Role-based session state
+  const [authUser, setAuthUser] = useState<AuthSession | null>(() => readAuthStorage());
+  const [isSyncingStudentDb, setIsSyncingStudentDb] = useState(false);
 
   // Coordinator permission for Question Bank (only permitted Coordinators can access)
   const [hasCoordinatorPermission, setHasCoordinatorPermission] = useState(false);
@@ -805,6 +828,16 @@ export default function JMCTCampusERP() {
 
   useEffect(() => {
     try {
+      if (authUser) {
+        window.localStorage.setItem(STORAGE_KEYS.auth, JSON.stringify(authUser));
+      } else {
+        window.localStorage.removeItem(STORAGE_KEYS.auth);
+      }
+    } catch {}
+  }, [authUser]);
+
+  useEffect(() => {
+    try {
       window.localStorage.setItem(STORAGE_KEYS.peon, JSON.stringify(peonTasks));
     } catch {}
   }, [peonTasks]);
@@ -899,6 +932,28 @@ export default function JMCTCampusERP() {
     };
   }, [supabase]);
 
+  const syncLiveStudentPortal = async () => {
+    if (!supabase) return;
+    setIsSyncingStudentDb(true);
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data && data.length > 0) {
+      setStudents(data.map(mapRowToStudent));
+      setDbStatus("live");
+      setDbError("");
+    }
+    setIsSyncingStudentDb(false);
+  };
+
+  const handleLogout = () => {
+    setAuthUser(null);
+    setHasCoordinatorPermission(false);
+    setView("erp");
+    setRoleTab("admin");
+  };
+
   const openRoleInErp = (tab: RoleTab, wing?: Wing) => {
     if (wing) {
       setWingFilter(wing);
@@ -957,27 +1012,74 @@ export default function JMCTCampusERP() {
       }
       setHasCoordinatorPermission(true);
       setCoordAuthError("");
+      setAuthUser({
+        role: "coordinator",
+        identifier: loginIdentifier.trim() || "coordinator@jmctnashik.edu.in",
+        label: "Coordinator • Q-Bank",
+      });
       setShowLoginModal(false);
       openRoleInErp("qbank");
       return;
     }
 
-    setShowLoginModal(false);
     if (loginRole === "student") {
       const matched = students.find(
         (s) => s.id.toLowerCase() === loginIdentifier.trim().toLowerCase()
       );
-      openStudentPortal(matched ? matched.id : studentPortalId);
+      if (!matched) {
+        setLoginError("Student Roll ID not found. Try JMCT-SC-101 or JMCT-PH-204.");
+        return;
+      }
+      setAuthUser({
+        role: "student",
+        identifier: matched.id,
+        label: `Student • ${matched.id}`,
+      });
+      setShowLoginModal(false);
+      openStudentPortal(matched.id);
       return;
     }
+
     if (loginRole === "parent") {
       const matched = students.find(
         (s) => s.id.toLowerCase() === loginIdentifier.trim().toLowerCase()
       );
-      if (matched) setParentLookupId(matched.id);
+      if (!matched) {
+        setLoginError("Ward Roll ID not found. Try JMCT-PH-204 or JMCT-SC-105.");
+        return;
+      }
+      setParentLookupId(matched.id);
+      setAuthUser({
+        role: "parent",
+        identifier: matched.id,
+        label: `Parent • ${matched.name}`,
+      });
+      setShowLoginModal(false);
       openRoleInErp("parent");
       return;
     }
+
+    if (loginPassword.trim().length < 4) {
+      setLoginError("Please enter a valid password (default: Jmct@2026).");
+      return;
+    }
+
+    const roleLabels: Record<AccountRole, string> = {
+      admin: "Admin Desk",
+      teacher: "Teacher Desk",
+      coordinator: "Coordinator • Q-Bank",
+      peon: "Peon Duty",
+      guard: "Security Desk",
+      parent: "Parent Desk",
+      student: "Student Portal",
+    };
+
+    setAuthUser({
+      role: loginRole,
+      identifier: loginIdentifier.trim(),
+      label: roleLabels[loginRole],
+    });
+    setShowLoginModal(false);
     openRoleInErp(loginRole);
   };
 
@@ -1238,9 +1340,10 @@ export default function JMCTCampusERP() {
 
     setStudents((prev) => prev.map((s) => (s.id === id ? updatedStudent : s)));
   };
+
   const [attendanceNotice, setAttendanceNotice] = useState<string>("");
   const [isSubmittingAttendance, setIsSubmittingAttendance] = useState<boolean>(false);
-const [submittedAttendanceKeys, setSubmittedAttendanceKeys] = useState<string[]>([]);
+  const [submittedAttendanceKeys, setSubmittedAttendanceKeys] = useState<string[]>([]);
 
   const currentAttendanceKey = `${teacherWing}__${onlySelectedClass ? teacherClass : "ALL"}`;
   const isAttendanceLocked = submittedAttendanceKeys.includes(currentAttendanceKey);
@@ -1249,6 +1352,7 @@ const [submittedAttendanceKeys, setSubmittedAttendanceKeys] = useState<string[]>
     setSubmittedAttendanceKeys((prev) => prev.filter((k) => k !== currentAttendanceKey));
     setAttendanceNotice("Attendance unlocked for editing.");
   };
+
   const resetAttendanceToUnmarked = async (id: string) => {
     setDbError("");
     setAttendanceNotice("");
@@ -1279,9 +1383,7 @@ const [submittedAttendanceKeys, setSubmittedAttendanceKeys] = useState<string[]>
       }
     }
 
-    setStudents((prev) =>
-      prev.map((s) => (s.id === id ? updatedStudent : s))
-    );
+    setStudents((prev) => prev.map((s) => (s.id === id ? updatedStudent : s)));
   };
 
   const handleSubmitAttendance = async () => {
@@ -1336,7 +1438,8 @@ const [submittedAttendanceKeys, setSubmittedAttendanceKeys] = useState<string[]>
     setPayAmount(String(due));
     setPayMethod("UPI");
   };
-const [payError, setPayError] = useState<string>("");
+
+  const [payError, setPayError] = useState<string>("");
   const [paymentConfirmed, setPaymentConfirmed] = useState<boolean>(false);
 
   const handlePayFormSubmit = (e: React.FormEvent) => {
@@ -1369,6 +1472,7 @@ const [payError, setPayError] = useState<string>("");
     confirmOnlineFeePayment(e);
     setPaymentConfirmed(false);
   };
+
   const confirmOnlineFeePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payingStudent) return;
@@ -1783,12 +1887,27 @@ const [payError, setPayError] = useState<string>("");
             >
               Student Portal
             </button>
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer transition"
-            >
-              Login
-            </button>
+            {authUser ? (
+              <div className="flex items-center gap-1.5">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-extrabold">
+                  {authUser.label}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold cursor-pointer transition"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer transition"
+              >
+                Login
+              </button>
+            )}
             <button
               onClick={() => openRoleInErp("admin")}
               className="px-4 py-1.5 rounded-lg bg-[#0F294A] hover:bg-indigo-700 text-white text-xs font-extrabold shadow-xs cursor-pointer transition"
@@ -1815,7 +1934,7 @@ const [payError, setPayError] = useState<string>("");
       )}
 
       {/* =====================================================================
-          STUDENT SELF-SERVICE PORTAL VIEW
+          STUDENT SELF-SERVICE PORTAL VIEW (LIVE DB + ACADEMIC FEED)
       ===================================================================== */}
       {view === "student" && activeStudent && (
         <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
@@ -1834,27 +1953,39 @@ const [payError, setPayError] = useState<string>("");
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <input
-                  type="text"
-                  value={studentPortalId}
-                  onChange={(e) => setStudentPortalId(e.target.value)}
-                  placeholder="Enter Student ID (e.g. JMCT-SC-101)"
-                  className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold w-52 focus:bg-white focus:border-indigo-500 outline-none"
-                />
-                {students.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setStudentPortalId(s.id)}
-                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold cursor-pointer transition ${
-                      activeStudent.id === s.id
-                        ? "bg-indigo-600 text-white"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
-                  >
-                    {s.id}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={syncLiveStudentPortal}
+                  disabled={isSyncingStudentDb}
+                  className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-extrabold cursor-pointer transition"
+                >
+                  {isSyncingStudentDb ? "Syncing..." : "↻ Sync Live DB"}
+                </button>
+                {authUser?.role !== "student" && (
+                  <>
+                    <input
+                      type="text"
+                      value={studentPortalId}
+                      onChange={(e) => setStudentPortalId(e.target.value)}
+                      placeholder="Enter Student ID (e.g. JMCT-SC-101)"
+                      className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold w-48 focus:bg-white focus:border-indigo-500 outline-none"
+                    />
+                    {students.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setStudentPortalId(s.id)}
+                        className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold cursor-pointer transition ${
+                          activeStudent.id === s.id
+                            ? "bg-indigo-600 text-white"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        {s.id}
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
 
@@ -1925,9 +2056,94 @@ const [payError, setPayError] = useState<string>("");
                     onClick={() => setReceiptStudent(activeStudent)}
                     className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
                   >
-                    Print Receipt
+                    Print / PDF Receipt
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Live Timetable, Homework & Notices for Active Student */}
+          <div className="grid lg:grid-cols-3 gap-4">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                Class Timetable ({activeStudent.wing})
+              </h3>
+              <div className="space-y-2">
+                {timetableSlots
+                  .filter((t) => t.wing === activeStudent.wing)
+                  .slice(0, 3)
+                  .map((slot) => (
+                    <div
+                      key={slot.id}
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs"
+                    >
+                      <div className="flex justify-between font-extrabold text-slate-900">
+                        <span>{slot.subject}</span>
+                        <span className="text-indigo-600">{slot.day}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {slot.timing} • {slot.roomOrLab} • {slot.faculty}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                Homework & Assignments
+              </h3>
+              <div className="space-y-2">
+                {homeworkList
+                  .filter((h) => h.wing === activeStudent.wing)
+                  .slice(0, 3)
+                  .map((hw) => (
+                    <div
+                      key={hw.id}
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-extrabold text-slate-900">{hw.subject}</span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            hw.completed
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          Due: {hw.dueDate}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-1">{hw.title}</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                Campus & Fee Notices
+              </h3>
+              <div className="space-y-2">
+                {notificationsData
+                  .filter((n) => n.wing === "All" || n.wing === activeStudent.wing)
+                  .slice(0, 3)
+                  .map((note) => (
+                    <div
+                      key={note.id}
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-extrabold uppercase text-indigo-600">
+                          {note.category}
+                        </span>
+                        <span className="text-[10px] text-slate-400">{note.dateLabel}</span>
+                      </div>
+                      <p className="font-bold text-slate-900 mt-0.5">{note.title}</p>
+                      <p className="text-[11px] text-slate-600 mt-0.5">{note.message}</p>
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
@@ -1958,7 +2174,6 @@ const [payError, setPayError] = useState<string>("");
       ===================================================================== */}
       {view === "portal" && (
         <>
-          {/* 1. Featured Spotlight Banner */}
           <section className="bg-gradient-to-r from-[#0F294A] via-[#1B3B66] to-[#9A3412] text-white">
             <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-7 space-y-4">
@@ -2054,7 +2269,6 @@ const [payError, setPayError] = useState<string>("");
               </div>
             </div>
 
-            {/* Announcement Ticker Strip */}
             <div className="bg-amber-400 text-slate-950 border-t border-amber-500">
               <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between gap-4 text-xs font-extrabold">
                 <div className="flex items-center gap-2 truncate">
@@ -2074,7 +2288,6 @@ const [payError, setPayError] = useState<string>("");
             </div>
           </section>
 
-          {/* 2. Quick Links Circles + News/Notifications/Announcements */}
           <section className="bg-[#181B20] text-white py-12">
             <div className="max-w-7xl mx-auto px-6 space-y-10">
               <div className="text-center space-y-4">
@@ -2171,7 +2384,6 @@ const [payError, setPayError] = useState<string>("");
             </div>
           </section>
 
-          {/* 3. Our Mission, Vision & Philosophy + Leadership Message */}
           <section id="mission-vc" className="space-y-0">
             <div className="bg-[#1C1F24] text-white py-14">
               <div className="max-w-7xl mx-auto px-6 space-y-8">
@@ -2228,7 +2440,6 @@ const [payError, setPayError] = useState<string>("");
             </div>
           </section>
 
-          {/* 4. Life at Campus & Our Institutions */}
           <section id="institutions" className="max-w-7xl mx-auto px-6 py-12 space-y-10">
             <div className="grid md:grid-cols-12 gap-6 items-center bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
               <div className="md:col-span-7 space-y-2">
@@ -2333,7 +2544,6 @@ const [payError, setPayError] = useState<string>("");
             </div>
           </section>
 
-          {/* 5. Modules Grid + Interactive Interface Tour */}
           <section id="modules" className="max-w-7xl mx-auto px-6 py-10 space-y-6">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-700">
@@ -2508,7 +2718,6 @@ const [payError, setPayError] = useState<string>("");
             </div>
           </section>
 
-          {/* 6. Campus Overview Strip + Structured 4-Column Footer */}
           <div className="bg-[#181B20] text-white py-8">
             <div className="max-w-7xl mx-auto px-6">
               <p className="text-xs font-black uppercase tracking-widest text-amber-400 mb-4">
@@ -2648,7 +2857,6 @@ const [payError, setPayError] = useState<string>("");
       ===================================================================== */}
       {view === "erp" && (
         <div className="max-w-7xl mx-auto px-6 py-6 space-y-5">
-          {/* Command Header: Title + Search + Wing Filter + Export + Demo Reset */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-600">
@@ -2699,7 +2907,6 @@ const [payError, setPayError] = useState<string>("");
             </div>
           </div>
 
-          {/* Primary Role & Module Desks Bar */}
           <div className="space-y-2.5 print:hidden">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
               {(
@@ -3039,7 +3246,7 @@ const [payError, setPayError] = useState<string>("");
             </div>
           )}
 
-          {/* 2. TEACHER DESK: ATTENDANCE + WING/CLASS/YEAR-WISE QUESTION UPLOAD */}
+          {/* 2. TEACHER DESK */}
           {roleTab === "teacher" && (
             <div className="space-y-5">
               <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
@@ -3119,7 +3326,7 @@ const [payError, setPayError] = useState<string>("");
                       htmlFor="onlyClassCheck"
                       className="text-xs font-bold text-slate-700 cursor-pointer"
                     >
-                Only Selected Class
+                      Only Selected Class
                     </label>
                   </div>
                 </div>
@@ -3144,7 +3351,8 @@ const [payError, setPayError] = useState<string>("");
                         onClick={markAllClassPresent}
                         className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer transition"
                       >
-                       </button>
+                        ✓ Mark All Present
+                      </button>
                     )}
                   </div>
 
@@ -3850,7 +4058,7 @@ const [payError, setPayError] = useState<string>("");
             </div>
           )}
 
-          {/* 6. QUESTION BANK (PERMITTED COORDINATORS ONLY • EDIT, SELECT & PRINT PAPER) */}
+          {/* 6. QUESTION BANK */}
           {roleTab === "qbank" && (
             <>
               {!hasCoordinatorPermission ? (
@@ -5065,7 +5273,7 @@ const [payError, setPayError] = useState<string>("");
             <div>
               <label className="text-[11px] font-extrabold uppercase text-slate-500">
                 {loginRole === "student" || loginRole === "parent"
-                  ? "Student ID or Email"
+                  ? "Student Roll ID"
                   : "Email or Mobile"}
               </label>
               <input
@@ -5100,7 +5308,7 @@ const [payError, setPayError] = useState<string>("");
         </div>
       )}
 
-      {/* ONLINE FEE PAYMENT MODAL (PARTIAL / HALF / FULL SUPPORT) */}
+      {/* ONLINE FEE PAYMENT MODAL */}
       {payingStudent && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4 print:hidden">
           <form
@@ -5263,18 +5471,19 @@ const [payError, setPayError] = useState<string>("");
         </div>
       )}
 
-      {/* OFFICIAL RECEIPT MODAL */}
+      {/* OFFICIAL PDF-READY RECEIPT MODAL */}
       {receiptStudent && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4 print:static print:bg-white print:p-0">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 space-y-4 print:shadow-none print:border">
-            <div className="flex justify-between items-start border-b border-slate-200 pb-4">
+          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 space-y-4 print:shadow-none print:border-slate-400 print:max-w-full">
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700">
                   JMCT GROUP OF INSTITUTIONS, NASHIK
                 </p>
                 <h3 className="text-lg font-black text-slate-900">Official Fee Receipt</h3>
                 <p className="text-[11px] font-mono text-slate-500">
-                  Ref: {lastPaymentMeta?.txnId || "TXN-JMCT-OFFICIAL"}
+                  Ref: {lastPaymentMeta?.txnId || `REC-${receiptStudent.id}-2026`} •{" "}
+                  {new Date().toLocaleDateString("en-IN")}
                 </p>
               </div>
               <button
@@ -5297,6 +5506,15 @@ const [payError, setPayError] = useState<string>("");
                 <span className="text-slate-500">Wing / Course:</span>
                 <span className="font-bold">
                   {receiptStudent.wing} • {receiptStudent.course}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Attendance:</span>
+                <span className="font-bold">
+                  {receiptStudent.totalDays > 0
+                    ? Math.round((receiptStudent.presentDays / receiptStudent.totalDays) * 100)
+                    : 100}
+                  % ({receiptStudent.presentDays}/{receiptStudent.totalDays} days)
                 </span>
               </div>
               {lastPaymentMeta && lastPaymentMeta.studentId === receiptStudent.id && (
@@ -5324,11 +5542,15 @@ const [payError, setPayError] = useState<string>("");
                 </span>
               </div>
             </div>
+            <div className="pt-2 border-t border-slate-100 flex justify-between items-end text-[11px] text-slate-500">
+              <span>Computer-generated receipt • JMCT Nashik</span>
+              <span className="font-bold text-slate-700">Authorized Accounts Desk</span>
+            </div>
             <button
               onClick={() => window.print()}
-              className="w-full py-3 rounded-xl bg-indigo-600 text-white font-extrabold text-xs uppercase tracking-wider cursor-pointer print:hidden"
+              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs uppercase tracking-wider cursor-pointer print:hidden"
             >
-              Print / Save PDF Receipt
+              Download / Print PDF Receipt
             </button>
           </div>
         </div>
