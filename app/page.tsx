@@ -190,21 +190,21 @@ const JOURNEY_STEPS = [
   {
     step: "01",
     title: "Home & Dedicated Portals",
-    desc: "Har role ke liye alag rasta — Student Login, Fee System, SIS Directory aur Staff & ERP ek jagah mix nahi hote.",
+    desc: "Dedicated routes for every role — Student Login & Portal, Fee System, SIS Directory, and Staff & ERP stay cleanly separated.",
     actionLabel: "Open Student Login",
     mode: "student" as PortalMode,
   },
   {
     step: "02",
     title: "Live Attendance & Fee Desk",
-    desc: "75% attendance benchmark ke saath real-time roll call, UPI/Card/NetBanking fee payment aur instant PDF receipt.",
+    desc: "Real-time roll call with a 75% attendance benchmark, UPI/Card/NetBanking fee collection, and instant printable receipts.",
     actionLabel: "Open Fee System",
     mode: "fees" as PortalMode,
   },
   {
     step: "03",
     title: "SIS Records & Staff Workflow",
-    desc: "Wing-wise student directory (SIS) aur teachers, coordinators, peon duty, gate pass, labs, HR aur alerts ka structured flow.",
+    desc: "Wing-wise student directory (SIS) plus structured desks for teachers, coordinators, peon duty, gate pass, labs, HR, and alerts.",
     actionLabel: "Open SIS Directory",
     mode: "sis" as PortalMode,
   },
@@ -1022,11 +1022,11 @@ export default function JMCTCampusERP() {
       (s) => s.id.toLowerCase() === cleanId.toLowerCase()
     );
     if (!matched) {
-      setStudentLoginError("Roll ID nahi mila. Try JMCT-SC-101, JMCT-PH-204, ya JMCT-PO-309.");
+      setStudentLoginError("Roll ID not found. Try JMCT-SC-101, JMCT-PH-204, or JMCT-PO-309.");
       return;
     }
     if (studentLoginPassInput.trim().length < 4) {
-      setStudentLoginError("Valid password daalein (default: Jmct@2026).");
+      setStudentLoginError("Please enter a valid password (default: Jmct@2026).");
       return;
     }
     setStudentPortalId(matched.id);
@@ -1509,14 +1509,14 @@ export default function JMCTCampusERP() {
     const amount = Number(payAmount);
 
     if (!amount || amount <= 0 || amount > due) {
-      setPayError("Sahi payment amount daalein jo pending due se zyada na ho.");
+      setPayError("Enter a valid payment amount not exceeding the pending due.");
       return;
     }
 
     if (payMethod === "UPI") {
       const cleanUpi = upiId.trim();
       if (!cleanUpi || !cleanUpi.includes("@")) {
-        setPayError("Valid UPI ID daalein (jaise name@upi).");
+        setPayError("Enter a valid UPI ID (such as name@upi).");
         return;
       }
     }
@@ -2004,7 +2004,7 @@ export default function JMCTCampusERP() {
                 </span>
                 <h1 className="text-2xl font-black text-slate-900 mt-0.5">Student Login</h1>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Apna Roll ID aur password daalkar student portal kholein.
+                  Enter your Roll ID and password to open the student portal.
                 </p>
               </div>
 
@@ -2597,8 +2597,8 @@ export default function JMCTCampusERP() {
                   School (CBSE), Pharmacy (PCI) & Polytechnic (MSBTE)
                 </h1>
                 <p className="text-sm sm:text-base text-slate-200 max-w-2xl leading-relaxed">
-                  Ek saaf tartib mein bane alag-alag portals: Student Login & Portal, Fee System,
-                  SIS Directory aur Staff & ERP — har kaam apni jagah, bina kisi khichdi ke.
+                  Separate portals arranged in a clear flow: Student Login & Portal, Fee System, SIS
+                  Directory, and Staff & ERP — every workflow in its own place without clutter.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-1">
                   <button
@@ -2713,7 +2713,7 @@ export default function JMCTCampusERP() {
             </div>
           </section>
 
-          {/* Step-by-Step Guided Tartib (01 -> 02 -> 03) */}
+          {/* Step-by-Step Guided Flow (01 -> 02 -> 03) */}
           <section className="max-w-7xl mx-auto px-6 py-10 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
               <div>
@@ -2721,7 +2721,7 @@ export default function JMCTCampusERP() {
                   STEP-BY-STEP CAMPUS FLOW
                 </p>
                 <h2 className="text-2xl font-black text-slate-900 mt-0.5">
-                  Tartib se har system kaise kaam karta hai
+                  How every system works step by step
                 </h2>
               </div>
               <p className="text-xs text-slate-500 font-semibold">
@@ -3019,10 +3019,10 @@ export default function JMCTCampusERP() {
                 SEPARATE PORTALS & ERP MODULES
               </p>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-                Har system ka alag-alag desk.
+                Every system has its own dedicated desk.
               </h2>
               <p className="text-xs sm:text-sm text-slate-600">
-                Kisi bhi card par click karke uska dedicated page ya desk kholein.
+                Click any card to open its dedicated page or desk.
               </p>
             </div>
 
@@ -3941,7 +3941,7 @@ export default function JMCTCampusERP() {
                         {attendanceNotice ? (
                           <span className="font-bold text-emerald-700">{attendanceNotice}</span>
                         ) : (
-                          <span>Roll call check karke Submit Attendance dabayein.</span>
+                          <span>Mark roll call and click Submit Attendance.</span>
                         )}
                       </div>
 
@@ -5676,15 +5676,15 @@ export default function JMCTCampusERP() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Question Statement</label>
+              <label className="text-xs font-bold text-slate-700">Question Text</label>
               <textarea
                 required
-                rows={3}
+                rows={4}
                 value={editingQuestion.questionText}
                 onChange={(e) =>
                   setEditingQuestion({ ...editingQuestion, questionText: e.target.value })
                 }
-                className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium"
               />
             </div>
 
@@ -5717,13 +5717,16 @@ export default function JMCTCampusERP() {
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  JMCT ERP • ROLE ACCESS
+                  JMCT CAMPUS • ROLE AUTHENTICATION
                 </p>
-                <h3 className="text-xl font-black text-slate-900">Sign In to Workspace</h3>
+                <h3 className="text-xl font-black text-slate-900">Sign In to Campus Desk</h3>
               </div>
               <button
                 type="button"
-                onClick={() => setShowLoginModal(false)}
+                onClick={() => {
+                  setShowLoginModal(false);
+                  setLoginError("");
+                }}
                 className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer"
               >
                 ✕
@@ -5737,19 +5740,19 @@ export default function JMCTCampusERP() {
             )}
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Select Role</label>
+              <label className="text-xs font-bold text-slate-700">Select Account Role</label>
               <select
                 value={loginRole}
                 onChange={(e) => handleLoginRoleChange(e.target.value as AccountRole)}
                 className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-extrabold text-slate-900"
               >
-                <option value="student">Student Portal (Roll ID)</option>
-                <option value="parent">Parent Desk (Ward ID)</option>
-                <option value="teacher">Teacher / Faculty Desk</option>
-                <option value="coordinator">Coordinator (Question Bank)</option>
-                <option value="peon">Peon / Support Staff</option>
-                <option value="guard">Security / Gate Pass</option>
-                <option value="admin">Admin / Accounts Desk</option>
+                <option value="student">Student Portal</option>
+                <option value="parent">Parent Desk</option>
+                <option value="teacher">Teacher (Attendance & Q-Upload)</option>
+                <option value="coordinator">Coordinator (Question Bank Access)</option>
+                <option value="admin">Admin Desk (Admissions & Fees)</option>
+                <option value="peon">Peon / Support Duty</option>
+                <option value="guard">Security Gate Pass</option>
               </select>
             </div>
 
@@ -5757,7 +5760,7 @@ export default function JMCTCampusERP() {
               <label className="text-xs font-bold text-slate-700">
                 {loginRole === "student" || loginRole === "parent"
                   ? "Student Roll ID"
-                  : "Official Email / Staff ID"}
+                  : "Institutional Email / Staff ID"}
               </label>
               <input
                 required
@@ -5770,7 +5773,9 @@ export default function JMCTCampusERP() {
 
             {loginRole === "coordinator" ? (
               <div>
-                <label className="text-xs font-bold text-slate-700">Coordinator Passcode</label>
+                <label className="text-xs font-bold text-slate-700">
+                  Coordinator Permission Code
+                </label>
                 <input
                   required
                   type="password"
@@ -5812,42 +5817,23 @@ export default function JMCTCampusERP() {
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  JMCT FEE GATEWAY • INSTANT RECEIPT
+                  JMCT ONLINE FEE GATEWAY
                 </p>
-                <h3 className="text-xl font-black text-slate-900">Pay Student Fee Online</h3>
+                <h3 className="text-xl font-black text-slate-900">{payingStudent.name}</h3>
+                <p className="text-xs text-slate-500">
+                  {payingStudent.id} • {payingStudent.wing} • Due:{" "}
+                  <strong className="text-rose-600 tabular-nums">
+                    ₹{modalDue.toLocaleString("en-IN")}
+                  </strong>
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setPayingStudent(null);
-                  setPayError("");
-                  setPaymentConfirmed(false);
-                }}
+                onClick={() => setPayingStudent(null)}
                 className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer"
               >
                 ✕
               </button>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Student:</span>
-                <span className="font-extrabold text-slate-900">
-                  {payingStudent.name} ({payingStudent.id})
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Wing & Course:</span>
-                <span className="font-bold text-slate-700">
-                  {payingStudent.wing} • {payingStudent.course}
-                </span>
-              </div>
-              <div className="flex justify-between pt-1 border-t border-slate-200/70">
-                <span className="text-slate-600 font-bold">Pending Due:</span>
-                <span className="font-black text-rose-600 tabular-nums">
-                  ₹{modalDue.toLocaleString("en-IN")}
-                </span>
-              </div>
             </div>
 
             {payError && (
@@ -5856,10 +5842,14 @@ export default function JMCTCampusERP() {
               </div>
             )}
 
+            {paymentConfirmed && (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-bold">
+                Do you confirm the fee payment of ₹{Number(payAmount || 0).toLocaleString("en-IN")} via {payMethod}? Click “Confirm & Pay Now” again.
+              </div>
+            )}
+
             <div>
-              <label className="text-xs font-bold text-slate-700">
-                Payment Amount (₹) — Max ₹{modalDue.toLocaleString("en-IN")}
-              </label>
+              <label className="text-xs font-bold text-slate-700">Payment Amount (₹)</label>
               <input
                 required
                 type="number"
@@ -5869,29 +5859,49 @@ export default function JMCTCampusERP() {
                 onChange={(e) => {
                   setPayAmount(e.target.value);
                   setPayError("");
+                  setPaymentConfirmed(false);
                 }}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-base font-black tabular-nums focus:bg-white focus:border-indigo-500 outline-none"
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-black tabular-nums"
               />
+              <div className="flex gap-2 mt-2">
+                {[5000, 10000, modalDue].map((amt, idx) =>
+                  amt > 0 ? (
+                    <button
+                      key={`${amt}-${idx}`}
+                      type="button"
+                      onClick={() => {
+                        setPayAmount(String(amt));
+                        setPayError("");
+                        setPaymentConfirmed(false);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 cursor-pointer tabular-nums"
+                    >
+                      {amt === modalDue ? `Full Due (₹${amt.toLocaleString("en-IN")})` : `₹${amt.toLocaleString("en-IN")}`}
+                    </button>
+                  ) : null
+                )}
+              </div>
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-700">Payment Method</label>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                {(["UPI", "Card", "NetBanking"] as const).map((mode) => (
+              <div className="grid grid-cols-3 gap-2 mt-1.5">
+                {(["UPI", "Card", "NetBanking"] as const).map((m) => (
                   <button
-                    key={mode}
+                    key={m}
                     type="button"
                     onClick={() => {
-                      setPayMethod(mode);
+                      setPayMethod(m);
                       setPayError("");
+                      setPaymentConfirmed(false);
                     }}
-                    className={`py-2 rounded-xl text-xs font-extrabold border cursor-pointer transition ${
-                      payMethod === mode
+                    className={`py-2 rounded-xl text-xs font-extrabold border cursor-pointer ${
+                      payMethod === m
                         ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        : "bg-slate-50 text-slate-700 border-slate-200"
                     }`}
                   >
-                    {mode === "NetBanking" ? "Net Banking" : mode}
+                    {m}
                   </button>
                 ))}
               </div>
@@ -5899,7 +5909,7 @@ export default function JMCTCampusERP() {
 
             {payMethod === "UPI" && (
               <div>
-                <label className="text-xs font-bold text-slate-700">Payer UPI ID</label>
+                <label className="text-xs font-bold text-slate-700">UPI ID</label>
                 <input
                   required
                   type="text"
@@ -5907,58 +5917,37 @@ export default function JMCTCampusERP() {
                   onChange={(e) => {
                     setUpiId(e.target.value);
                     setPayError("");
+                    setPaymentConfirmed(false);
                   }}
                   placeholder="name@upi"
-                  className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none"
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
                 />
               </div>
             )}
 
-            {paymentConfirmed && (
-              <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-bold">
-                Kya aap ₹{Number(payAmount || 0).toLocaleString("en-IN")} ({payMethod}) ka fee
-                payment confirm karte hain? Dobara &ldquo;Confirm &amp; Pay Now&rdquo; dabayein.
-              </div>
-            )}
-
-            <div className="flex gap-2.5 pt-2">
-              <button
-                type="submit"
-                disabled={isProcessingPay}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs cursor-pointer transition disabled:opacity-60"
-              >
-                {isProcessingPay
-                  ? "Processing Payment..."
-                  : paymentConfirmed
-                  ? `Confirm & Pay ₹${Number(payAmount || 0).toLocaleString("en-IN")}`
-                  : `Pay ₹${Number(payAmount || 0).toLocaleString("en-IN")} Now`}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPayingStudent(null);
-                  setPayError("");
-                  setPaymentConfirmed(false);
-                }}
-                className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={isProcessingPay}
+              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm cursor-pointer disabled:opacity-50"
+            >
+              {isProcessingPay
+                ? "Processing Payment..."
+                : `Confirm & Pay ₹${Number(payAmount || 0).toLocaleString("en-IN")}`}
+            </button>
           </form>
         </div>
       )}
 
-      {/* PRINTABLE FEE RECEIPT MODAL */}
+      {/* OFFICIAL FEE RECEIPT MODAL */}
       {receiptStudent && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 space-y-4">
+          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl space-y-5">
             <div className="flex justify-between items-start border-b border-dashed border-slate-300 pb-4">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  OFFICIAL FEE RECEIPT • NASHIK
+                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600">
+                  JMCT GROUP OF INSTITUTIONS • NASHIK
                 </p>
-                <h3 className="text-xl font-black text-slate-900">JMCT Campus ERP</h3>
+                <h3 className="text-xl font-black mt-0.5">Official Fee Receipt</h3>
                 <p className="text-xs text-slate-500">
                   {receiptStudent.wing} Wing • {receiptStudent.course}
                 </p>
@@ -5969,7 +5958,7 @@ export default function JMCTCampusERP() {
                   setReceiptStudent(null);
                   setLastPaymentMeta(null);
                 }}
-                className="text-slate-400 hover:text-slate-900 font-bold print:hidden cursor-pointer"
+                className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer print:hidden"
               >
                 ✕
               </button>
@@ -5977,54 +5966,53 @@ export default function JMCTCampusERP() {
 
             {lastPaymentMeta && lastPaymentMeta.studentId === receiptStudent.id && (
               <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-0.5">
-                <p className="font-black">✓ Online Payment Recorded</p>
+                <p className="font-black">✓ Latest Online Payment Verified</p>
                 <p className="font-mono text-[11px]">Txn ID: {lastPaymentMeta.txnId}</p>
                 <p className="text-[11px]">
                   Paid ₹{lastPaymentMeta.amount.toLocaleString("en-IN")} via{" "}
-                  {lastPaymentMeta.method}
-                  {lastPaymentMeta.upiId ? ` (${lastPaymentMeta.upiId})` : ""} on{" "}
-                  {lastPaymentMeta.paidAt}
+                  <strong>{lastPaymentMeta.method}</strong> ({lastPaymentMeta.paidAt})
                 </p>
               </div>
             )}
 
-            <div className="space-y-2 text-sm tabular-nums">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Student Roll ID</span>
-                <span className="font-mono font-bold text-indigo-600">{receiptStudent.id}</span>
-              </div>
+            <div className="space-y-2.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-500">Student Name</span>
                 <span className="font-bold">{receiptStudent.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Annual Fee</span>
-                <span className="font-semibold">
+                <span className="text-slate-500">Roll ID</span>
+                <span className="font-mono font-bold text-indigo-600">{receiptStudent.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Total Annual Fee</span>
+                <span className="font-bold tabular-nums">
                   ₹{receiptStudent.totalFee.toLocaleString("en-IN")}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Amount Paid</span>
-                <span className="font-bold text-emerald-700">
+                <span className="text-slate-500">Total Paid</span>
+                <span className="font-bold text-emerald-700 tabular-nums">
                   ₹{receiptStudent.paidFee.toLocaleString("en-IN")}
                 </span>
               </div>
-              <div className="flex justify-between border-t border-slate-200 pt-2 text-base">
-                <span className="font-extrabold">Balance Due</span>
-                <span className="font-black text-rose-600">
+              <div className="flex justify-between border-t border-slate-200 pt-2.5 text-base">
+                <span className="font-black">Balance Due</span>
+                <span className="font-black text-rose-600 tabular-nums">
                   ₹
-                  {Math.max(0, receiptStudent.totalFee - receiptStudent.paidFee).toLocaleString(
-                    "en-IN"
-                  )}
+                  {Math.max(
+                    0,
+                    receiptStudent.totalFee - receiptStudent.paidFee
+                  ).toLocaleString("en-IN")}
                 </span>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2 print:hidden">
+            <div className="flex gap-2.5 pt-2 print:hidden">
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-extrabold text-xs cursor-pointer"
               >
                 Print / Save PDF
               </button>
@@ -6034,7 +6022,7 @@ export default function JMCTCampusERP() {
                   setReceiptStudent(null);
                   setLastPaymentMeta(null);
                 }}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-sm cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 font-bold text-xs cursor-pointer"
               >
                 Close
               </button>
