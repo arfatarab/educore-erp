@@ -15,8 +15,15 @@ type RoleTab =
   | "inventory"
   | "hr"
   | "notifications";
-type AccountRole = "admin" | "teacher" | "coordinator" | "peon" | "guard" | "parent" | "student";
-type PortalMode = "portal" | "erp" | "student" | "fees" | "sis";
+type AccountRole =
+  | "admin"
+  | "teacher"
+  | "coordinator"
+  | "peon"
+  | "guard"
+  | "parent"
+  | "student";
+type PortalMode = "portal" | "erp" | "student" | "fees" | "sis" | "idcards";
 type TourTab =
   | "Dashboard"
   | "Attendance"
@@ -33,6 +40,82 @@ type ModuleCategory = "All" | "Academic & Exams" | "Fees & Parent" | "Operations
 type FeeFilter = "All" | "Due" | "Paid";
 
 const COORDINATOR_PASSCODE = "COORD2026";
+
+const ROLE_CREDENTIALS: Record<
+  AccountRole,
+  {
+    title: string;
+    subtitle: string;
+    defaultId: string;
+    defaultPass: string;
+    idLabel: string;
+    targetMode: PortalMode;
+    targetTab?: RoleTab;
+  }
+> = {
+  teacher: {
+    title: "Teacher Login",
+    subtitle: "Roll call, class attendance & wing/class/year question upload",
+    defaultId: "TCH-JMCT-01",
+    defaultPass: "Teacher@2026",
+    idLabel: "Teacher ID or Email",
+    targetMode: "erp",
+    targetTab: "teacher",
+  },
+  peon: {
+    title: "Peon & Support Login",
+    subtitle: "Duty roster, block/lab cleaning, drinking water & bell sign-off",
+    defaultId: "PEON-JMCT-01",
+    defaultPass: "Peon@2026",
+    idLabel: "Peon Staff ID",
+    targetMode: "erp",
+    targetTab: "peon",
+  },
+  guard: {
+    title: "Security Guard Login",
+    subtitle: "Visitor, parent & vendor gate pass entry and exit log",
+    defaultId: "GUARD-JMCT-01",
+    defaultPass: "Guard@2026",
+    idLabel: "Guard ID",
+    targetMode: "erp",
+    targetTab: "guard",
+  },
+  coordinator: {
+    title: "Coordinator Login",
+    subtitle: "Question Bank review, edit, paper selection & print access",
+    defaultId: "COORD-JMCT-01",
+    defaultPass: COORDINATOR_PASSCODE,
+    idLabel: "Coordinator ID",
+    targetMode: "erp",
+    targetTab: "qbank",
+  },
+  admin: {
+    title: "Admin & Accounts Login",
+    subtitle: "Admissions, confidential fee collection ledger, ID cards & ERP",
+    defaultId: "ADMIN-JMCT-01",
+    defaultPass: "Admin@2026",
+    idLabel: "Admin ID",
+    targetMode: "erp",
+    targetTab: "admin",
+  },
+  parent: {
+    title: "Parent Desk Login",
+    subtitle: "Ward attendance, personal fee balance & receipt view",
+    defaultId: "JMCT-PH-204",
+    defaultPass: "Parent@2026",
+    idLabel: "Student Roll ID",
+    targetMode: "erp",
+    targetTab: "parent",
+  },
+  student: {
+    title: "Student Portal Login",
+    subtitle: "Personal attendance, timetable, homework & own fee status",
+    defaultId: "JMCT-SC-101",
+    defaultPass: "Student@2026",
+    idLabel: "Student Roll ID",
+    targetMode: "student",
+  },
+};
 
 interface Student {
   id: string;
@@ -166,8 +249,8 @@ const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "S
 
 const ANNOUNCEMENTS = [
   "Admissions Open 2026–27: CBSE School, PCI Pharmacy (B.Pharm / D.Pharm) & MSBTE Polytechnic Diploma",
-  "Exam Circular: Question Bank access permitted only to Coordinators; teachers upload by Wing, Class & Year",
-  "Fee Desk Notice: Online UPI / Card / NetBanking fee receipts & CSV registers active on Campus ERP",
+  "Role-Based Access Active: Separate logins for Teacher, Peon, Guard, Coordinator, Admin, Parent & Student",
+  "Wing ID Cards Ready: Digital & printable ID cards for School (CBSE), Pharmacy (PCI) & Polytechnic (MSBTE)",
 ];
 
 const QUICK_CIRCLES: {
@@ -178,35 +261,35 @@ const QUICK_CIRCLES: {
   wing?: Wing;
 }[] = [
   { label: "Student Login", sub: "Student", mode: "student" },
-  { label: "Fee System", sub: "Fees", mode: "fees" },
+  { label: "ID Cards", sub: "ID Card", mode: "idcards" },
   { label: "SIS Directory", sub: "SIS", mode: "sis" },
-  { label: "Attendance", sub: "Roll Call", mode: "erp", tab: "teacher" },
-  { label: "Peon Duty", sub: "Roster", mode: "erp", tab: "peon" },
-  { label: "Gate Pass", sub: "Security", mode: "erp", tab: "guard" },
-  { label: "Question Bank", sub: "Q-Bank", mode: "erp", tab: "qbank" },
+  { label: "Teacher Login", sub: "Teacher", mode: "erp", tab: "teacher" },
+  { label: "Peon Login", sub: "Peon", mode: "erp", tab: "peon" },
+  { label: "Guard Login", sub: "Guard", mode: "erp", tab: "guard" },
+  { label: "Fee System", sub: "Fees", mode: "fees" },
 ];
 
 const JOURNEY_STEPS = [
   {
     step: "01",
-    title: "Home & Dedicated Portals",
-    desc: "Dedicated routes for every role — Student Login & Portal, Fee System, SIS Directory, and Staff & ERP stay cleanly separated.",
-    actionLabel: "Open Student Login",
-    mode: "student" as PortalMode,
+    title: "Dedicated Role Logins",
+    desc: "Separate login access for Teacher, Peon, Guard, Coordinator, Admin, Parent, and Student — each lands directly in their own desk.",
+    actionLabel: "Open Role Login",
+    mode: "erp" as PortalMode,
   },
   {
     step: "02",
-    title: "Live Attendance & Fee Desk",
-    desc: "Real-time roll call with a 75% attendance benchmark, UPI/Card/NetBanking fee collection, and instant printable receipts.",
-    actionLabel: "Open Fee System",
-    mode: "fees" as PortalMode,
+    title: "Wing-Wise ID Cards",
+    desc: "Generate and print clean ID cards separately for School (CBSE), Pharmacy (PCI), and Polytechnic (MSBTE) students.",
+    actionLabel: "Open ID Cards",
+    mode: "idcards" as PortalMode,
   },
   {
     step: "03",
-    title: "SIS Records & Staff Workflow",
-    desc: "Wing-wise student directory (SIS) plus structured desks for teachers, coordinators, peon duty, gate pass, labs, HR, and alerts.",
-    actionLabel: "Open SIS Directory",
-    mode: "sis" as PortalMode,
+    title: "Private Fee System & SIS",
+    desc: "Overall fee collection summary stays hidden from public view; authorized fee desk handles payments & receipts while SIS manages records.",
+    actionLabel: "Open Fee System",
+    mode: "fees" as PortalMode,
   },
 ];
 
@@ -229,14 +312,14 @@ const NEWS_AND_EVENTS = [
 
 const NOTIFICATIONS_LIST = [
   { code: "N-01", text: "75% minimum attendance monitoring active for Pharmacy & Polytechnic", date: "Nov 2026" },
-  { code: "N-02", text: "Instant fee receipt generation enabled for partial & full payments", date: "Nov 2026" },
+  { code: "N-02", text: "Dedicated ID card preview & print enabled for all 3 campus wings", date: "Nov 2026" },
   { code: "N-03", text: "Morning & day shift peon duty sign-off mandatory for all blocks", date: "Daily" },
 ];
 
 const ANNOUNCEMENTS_LIST = [
-  { code: "A-01", text: "Dedicated Student Portal, Fee System & SIS Directory live", date: "Active" },
-  { code: "A-02", text: "Question Bank restricted to permitted Coordinators; teachers upload by Wing, Class & Year", date: "Active" },
-  { code: "A-03", text: "Wing-wise CSV export available in SIS & Fee Desks", date: "Updated" },
+  { code: "A-01", text: "Separate logins active for Teacher, Peon, Guard, Coordinator & Admin", date: "Active" },
+  { code: "A-02", text: "Overall fee collection totals kept private from public home & directory pages", date: "Protected" },
+  { code: "A-03", text: "Wing-wise ID cards for School, Pharmacy & Polytechnic ready to print", date: "Updated" },
 ];
 
 const MISSION_PILLARS = [
@@ -330,6 +413,7 @@ const PLATFORM_MODULES: {
     | "gate"
     | "fees"
     | "parent"
+    | "idcards"
     | "wingSchool"
     | "wingPharmacy"
     | "wingPolytechnic"
@@ -340,17 +424,18 @@ const PLATFORM_MODULES: {
     | "notifications";
 }[] = [
   { title: "Student Login & Portal", desc: "Dedicated student login, attendance & schedule", category: "Fees & Parent", mode: "student", metricKey: "students" },
-  { title: "Fee System & Receipts", desc: "Online payment, dues & PDF receipts", category: "Fees & Parent", mode: "fees", metricKey: "fees" },
+  { title: "3-Wing ID Cards", desc: "School, Pharmacy & Polytechnic ID card generator", category: "Operations", mode: "idcards", metricKey: "idcards" },
+  { title: "Fee System & Receipts", desc: "Protected fee ledger, online pay & receipts", category: "Fees & Parent", mode: "fees", metricKey: "fees" },
   { title: "SIS Directory", desc: "Dedicated student profiles, wings & CSV", category: "Academic & Exams", mode: "sis", metricKey: "students" },
   { title: "Admissions Counter", desc: "New student enrollment & roll IDs", category: "Fees & Parent", mode: "erp", tab: "admin", metricKey: "students" },
-  { title: "Attendance", desc: "Class-wise & wing roll call", category: "Academic & Exams", mode: "erp", tab: "teacher", metricKey: "attendance" },
-  { title: "Peon Duty", desc: "Shift roster, labs & cleaning", category: "Operations", mode: "erp", tab: "peon", metricKey: "peon" },
+  { title: "Teacher Desk & Roll Call", desc: "Class-wise attendance & question upload", category: "Academic & Exams", mode: "erp", tab: "teacher", metricKey: "attendance" },
+  { title: "Peon Duty Login", desc: "Shift roster, labs & cleaning", category: "Operations", mode: "erp", tab: "peon", metricKey: "peon" },
   { title: "Question Bank", desc: "Coordinators only • Edit & Print", category: "Academic & Exams", mode: "erp", tab: "qbank", metricKey: "qbank" },
-  { title: "Gate Pass", desc: "Visitor, parent & vendor log", category: "Operations", mode: "erp", tab: "guard", metricKey: "gate" },
-  { title: "Parent Desk", desc: "Attendance & fee balance lookup", category: "Fees & Parent", mode: "erp", tab: "parent", metricKey: "parent" },
-  { title: "School Wing", desc: "CBSE classes & faculty desk", category: "Academic & Exams", mode: "erp", tab: "teacher", wing: "School", metricKey: "wingSchool" },
-  { title: "Pharmacy Wing", desc: "PCI B.Pharm & D.Pharm desk", category: "Academic & Exams", mode: "erp", tab: "teacher", wing: "Pharmacy", metricKey: "wingPharmacy" },
-  { title: "Polytechnic Wing", desc: "MSBTE diploma labs & desk", category: "Academic & Exams", mode: "erp", tab: "teacher", wing: "Polytechnic", metricKey: "wingPolytechnic" },
+  { title: "Security Gate Pass", desc: "Visitor, parent & vendor log", category: "Operations", mode: "erp", tab: "guard", metricKey: "gate" },
+  { title: "Parent Desk", desc: "Attendance & ward fee balance lookup", category: "Fees & Parent", mode: "erp", tab: "parent", metricKey: "parent" },
+  { title: "School Wing ID & Desk", desc: "CBSE classes & ID cards", category: "Academic & Exams", mode: "idcards", wing: "School", metricKey: "wingSchool" },
+  { title: "Pharmacy Wing ID & Desk", desc: "PCI B.Pharm & D.Pharm ID cards", category: "Academic & Exams", mode: "idcards", wing: "Pharmacy", metricKey: "wingPharmacy" },
+  { title: "Polytechnic Wing ID & Desk", desc: "MSBTE diploma labs & ID cards", category: "Academic & Exams", mode: "idcards", wing: "Polytechnic", metricKey: "wingPolytechnic" },
   { title: "Timetable", desc: "Period & lab schedule roster", category: "Academic & Exams", mode: "erp", tab: "timetable", metricKey: "timetable" },
   { title: "Homework", desc: "Daily assignments & tracking", category: "Academic & Exams", mode: "erp", tab: "homework", metricKey: "homework" },
   { title: "Inventory", desc: "Lab glassware, stock & assets", category: "Operations", mode: "erp", tab: "inventory", metricKey: "inventory" },
@@ -693,9 +778,8 @@ function mapStudentToRow(s: Student) {
 
 export default function JMCTCampusERP() {
   const supabase = getSupabase();
-  // Default view is "portal" (Home Website first) so opening the site starts at the main portal
   const [view, setView] = useState<PortalMode>("portal");
-  const [roleTab, setRoleTab] = useState<RoleTab>("admin");
+  const [roleTab, setRoleTab] = useState<RoleTab>("teacher");
   const [tourTab, setTourTab] = useState<TourTab>("Dashboard");
   const [moduleCategory, setModuleCategory] = useState<ModuleCategory>("All");
   const [feeFilter, setFeeFilter] = useState<FeeFilter>("All");
@@ -710,6 +794,12 @@ export default function JMCTCampusERP() {
   const [authUser, setAuthUser] = useState<AuthSession | null>(() => readAuthStorage());
   const [isSyncingStudentDb, setIsSyncingStudentDb] = useState(false);
 
+  // Dedicated role login form state (when opening a protected role desk)
+  const [gateRole, setGateRole] = useState<AccountRole>("teacher");
+  const [gateIdentifier, setGateIdentifier] = useState(ROLE_CREDENTIALS.teacher.defaultId);
+  const [gatePassword, setGatePassword] = useState(ROLE_CREDENTIALS.teacher.defaultPass);
+  const [gateError, setGateError] = useState("");
+
   // Coordinator permission for Question Bank
   const [hasCoordinatorPermission, setHasCoordinatorPermission] = useState(false);
   const [coordPasscodeInput, setCoordPasscodeInput] = useState(COORDINATOR_PASSCODE);
@@ -717,18 +807,20 @@ export default function JMCTCampusERP() {
 
   // Login modal state
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginRole, setLoginRole] = useState<AccountRole>("student");
-  const [loginIdentifier, setLoginIdentifier] = useState("JMCT-SC-101");
-  const [loginPassword, setLoginPassword] = useState("Jmct@2026");
-  const [loginCoordCode, setLoginCoordCode] = useState(COORDINATOR_PASSCODE);
+  const [loginRole, setLoginRole] = useState<AccountRole>("teacher");
+  const [loginIdentifier, setLoginIdentifier] = useState(ROLE_CREDENTIALS.teacher.defaultId);
+  const [loginPassword, setLoginPassword] = useState(ROLE_CREDENTIALS.teacher.defaultPass);
   const [loginError, setLoginError] = useState("");
 
   // Student portal state (separate login gate when not logged in as student)
   const [studentPortalId, setStudentPortalId] = useState("JMCT-SC-101");
   const [studentLoginRollInput, setStudentLoginRollInput] = useState("JMCT-SC-101");
-  const [studentLoginPassInput, setStudentLoginPassInput] = useState("Jmct@2026");
+  const [studentLoginPassInput, setStudentLoginPassInput] = useState("Student@2026");
   const [studentLoginError, setStudentLoginError] = useState("");
   const [studentUnlocked, setStudentUnlocked] = useState(false);
+
+  // ID Card preview state
+  const [selectedIdCardStudentId, setSelectedIdCardStudentId] = useState<string | null>(null);
 
   // Teacher class-wise + question upload state
   const [teacherName, setTeacherName] = useState("Prof. Rajesh Deshmukh");
@@ -984,7 +1076,14 @@ export default function JMCTCampusERP() {
     setHasCoordinatorPermission(false);
     setStudentUnlocked(false);
     setView("portal");
-    setRoleTab("admin");
+    setRoleTab("teacher");
+  };
+
+  const prepareRoleGate = (r: AccountRole) => {
+    setGateRole(r);
+    setGateIdentifier(ROLE_CREDENTIALS[r].defaultId);
+    setGatePassword(ROLE_CREDENTIALS[r].defaultPass);
+    setGateError("");
   };
 
   const openMode = (mode: PortalMode, tab?: RoleTab, wing?: Wing) => {
@@ -1010,8 +1109,112 @@ export default function JMCTCampusERP() {
     }
     if (tab) {
       setRoleTab(tab);
+      const mappedRole: AccountRole =
+        tab === "admin"
+          ? "admin"
+          : tab === "teacher" || tab === "timetable" || tab === "homework"
+          ? "teacher"
+          : tab === "peon" || tab === "inventory" || tab === "hr" || tab === "notifications"
+          ? "peon"
+          : tab === "guard"
+          ? "guard"
+          : tab === "parent"
+          ? "parent"
+          : "coordinator";
+      prepareRoleGate(mappedRole);
     }
     setView(mode);
+  };
+
+  // Check if current session can view overall campus fee collection totals
+  const canViewOverallFees =
+    authUser?.role === "admin" || authUser?.role === "coordinator";
+
+  // Check if current ERP tab requires a specific role login
+  const isErpTabAuthorized = (tab: RoleTab): boolean => {
+    if (!authUser) return false;
+    if (authUser.role === "admin") return true;
+    if (tab === "qbank") return authUser.role === "coordinator" || hasCoordinatorPermission;
+    if (tab === "teacher" || tab === "timetable" || tab === "homework") {
+      return authUser.role === "teacher" || authUser.role === "coordinator";
+    }
+    if (tab === "peon" || tab === "inventory" || tab === "hr" || tab === "notifications") {
+      return authUser.role === "peon" || authUser.role === "teacher";
+    }
+    if (tab === "guard") return authUser.role === "guard";
+    if (tab === "parent") return authUser.role === "parent" || authUser.role === "student";
+    return false;
+  };
+
+  const handleRoleGateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setGateError("");
+    const cleanId = gateIdentifier.trim();
+    const cleanPass = gatePassword.trim();
+
+    if (!cleanId) {
+      setGateError("Please enter your login ID.");
+      return;
+    }
+
+    if (gateRole === "coordinator") {
+      if (cleanPass !== COORDINATOR_PASSCODE && cleanPass.length < 6) {
+        setGateError(`Use Coordinator code ${COORDINATOR_PASSCODE} or valid password.`);
+        return;
+      }
+      setHasCoordinatorPermission(true);
+      setAuthUser({
+        role: "coordinator",
+        identifier: cleanId,
+        label: `Coordinator • ${cleanId}`,
+      });
+      setRoleTab("qbank");
+      return;
+    }
+
+    if (cleanPass.length < 4) {
+      setGateError("Please enter a valid password.");
+      return;
+    }
+
+    if (gateRole === "parent") {
+      const matched = students.find(
+        (s) => s.id.toLowerCase() === cleanId.toLowerCase()
+      );
+      if (!matched) {
+        setGateError("Ward Roll ID not found. Try JMCT-PH-204 or JMCT-SC-105.");
+        return;
+      }
+      setParentLookupId(matched.id);
+      setAuthUser({
+        role: "parent",
+        identifier: matched.id,
+        label: `Parent • ${matched.name}`,
+      });
+      setRoleTab("parent");
+      return;
+    }
+
+    const labels: Record<AccountRole, string> = {
+      teacher: `Teacher • ${cleanId}`,
+      peon: `Peon • ${cleanId}`,
+      guard: `Guard • ${cleanId}`,
+      coordinator: `Coordinator • ${cleanId}`,
+      admin: `Admin • ${cleanId}`,
+      parent: `Parent • ${cleanId}`,
+      student: `Student • ${cleanId}`,
+    };
+
+    setAuthUser({
+      role: gateRole,
+      identifier: cleanId,
+      label: labels[gateRole],
+    });
+
+    if (gateRole === "teacher") setRoleTab("teacher");
+    else if (gateRole === "peon") setRoleTab("peon");
+    else if (gateRole === "guard") setRoleTab("guard");
+    else if (gateRole === "admin") setRoleTab("admin");
   };
 
   const handleStudentLoginSubmit = (e: React.FormEvent) => {
@@ -1026,7 +1229,7 @@ export default function JMCTCampusERP() {
       return;
     }
     if (studentLoginPassInput.trim().length < 4) {
-      setStudentLoginError("Please enter a valid password (default: Jmct@2026).");
+      setStudentLoginError("Please enter a valid password.");
       return;
     }
     setStudentPortalId(matched.id);
@@ -1041,33 +1244,27 @@ export default function JMCTCampusERP() {
   const handleLoginRoleChange = (nextRole: AccountRole) => {
     setLoginRole(nextRole);
     setLoginError("");
-    const presets: Record<AccountRole, string> = {
-      admin: "admin@jmctnashik.edu.in",
-      teacher: "faculty@jmctnashik.edu.in",
-      coordinator: "coordinator@jmctnashik.edu.in",
-      peon: "support@jmctnashik.edu.in",
-      guard: "gate@jmctnashik.edu.in",
-      parent: "JMCT-PH-204",
-      student: "JMCT-SC-101",
-    };
-    setLoginIdentifier(presets[nextRole]);
+    setLoginIdentifier(ROLE_CREDENTIALS[nextRole].defaultId);
+    setLoginPassword(ROLE_CREDENTIALS[nextRole].defaultPass);
   };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
+    const cleanId = loginIdentifier.trim();
+    const cleanPass = loginPassword.trim();
 
     if (loginRole === "coordinator") {
-      if (loginCoordCode.trim() !== COORDINATOR_PASSCODE) {
-        setLoginError(`Invalid Coordinator Code. Use ${COORDINATOR_PASSCODE} for Question Bank permission.`);
+      if (cleanPass !== COORDINATOR_PASSCODE && cleanPass.length < 6) {
+        setLoginError(`Invalid Coordinator Code. Use ${COORDINATOR_PASSCODE}.`);
         return;
       }
       setHasCoordinatorPermission(true);
       setCoordAuthError("");
       setAuthUser({
         role: "coordinator",
-        identifier: loginIdentifier.trim() || "coordinator@jmctnashik.edu.in",
-        label: "Coordinator • Q-Bank",
+        identifier: cleanId || "COORD-JMCT-01",
+        label: `Coordinator • ${cleanId || "COORD-JMCT-01"}`,
       });
       setShowLoginModal(false);
       openMode("erp", "qbank");
@@ -1076,7 +1273,7 @@ export default function JMCTCampusERP() {
 
     if (loginRole === "student") {
       const matched = students.find(
-        (s) => s.id.toLowerCase() === loginIdentifier.trim().toLowerCase()
+        (s) => s.id.toLowerCase() === cleanId.toLowerCase()
       );
       if (!matched) {
         setLoginError("Student Roll ID not found. Try JMCT-SC-101 or JMCT-PH-204.");
@@ -1097,7 +1294,7 @@ export default function JMCTCampusERP() {
 
     if (loginRole === "parent") {
       const matched = students.find(
-        (s) => s.id.toLowerCase() === loginIdentifier.trim().toLowerCase()
+        (s) => s.id.toLowerCase() === cleanId.toLowerCase()
       );
       if (!matched) {
         setLoginError("Ward Roll ID not found. Try JMCT-PH-204 or JMCT-SC-105.");
@@ -1114,28 +1311,31 @@ export default function JMCTCampusERP() {
       return;
     }
 
-    if (loginPassword.trim().length < 4) {
-      setLoginError("Please enter a valid password (default: Jmct@2026).");
+    if (cleanPass.length < 4) {
+      setLoginError("Please enter a valid password.");
       return;
     }
 
     const roleLabels: Record<AccountRole, string> = {
-      admin: "Admin Desk",
-      teacher: "Teacher Desk",
-      coordinator: "Coordinator • Q-Bank",
-      peon: "Peon Duty",
-      guard: "Security Desk",
-      parent: "Parent Desk",
-      student: "Student Portal",
+      admin: `Admin • ${cleanId}`,
+      teacher: `Teacher • ${cleanId}`,
+      coordinator: `Coordinator • ${cleanId}`,
+      peon: `Peon • ${cleanId}`,
+      guard: `Guard • ${cleanId}`,
+      parent: `Parent • ${cleanId}`,
+      student: `Student • ${cleanId}`,
     };
 
     setAuthUser({
       role: loginRole,
-      identifier: loginIdentifier.trim(),
+      identifier: cleanId,
       label: roleLabels[loginRole],
     });
     setShowLoginModal(false);
-    openMode("erp", loginRole);
+    openMode(
+      ROLE_CREDENTIALS[loginRole].targetMode,
+      ROLE_CREDENTIALS[loginRole].targetTab
+    );
   };
 
   const handleVerifyCoordinatorPermission = (e: React.FormEvent) => {
@@ -1191,6 +1391,9 @@ export default function JMCTCampusERP() {
   const activeStudent =
     students.find((s) => s.id.toLowerCase() === studentPortalId.trim().toLowerCase()) ||
     students[0];
+
+  const selectedIdCardStudent =
+    students.find((s) => s.id === selectedIdCardStudentId) || null;
 
   const isStudentAuthenticated = studentUnlocked || authUser?.role === "student";
 
@@ -1835,9 +2038,11 @@ export default function JMCTCampusERP() {
       case "gate":
         return `${insideGateCount} Inside`;
       case "fees":
-        return `₹${Math.round(totalCollected / 1000)}k Paid`;
+        return canViewOverallFees ? `₹${Math.round(totalCollected / 1000)}k Paid` : "Private Desk";
       case "parent":
-        return `Due ₹${Math.round(totalPending / 1000)}k`;
+        return "Ward Lookup";
+      case "idcards":
+        return `${students.length} Cards`;
       case "wingSchool":
         return `${students.filter((s) => s.wing === "School").length} CBSE`;
       case "wingPharmacy":
@@ -1867,7 +2072,7 @@ export default function JMCTCampusERP() {
         view === "portal" ? "bg-[#F8FAFC] text-slate-900" : "bg-[#F1F5F9] text-slate-900"
       }`}
     >
-      {/* Top Navbar with Single-Row Mobile Scroll & Dedicated Portal Switchers */}
+      {/* Top Navbar with Dedicated Portals, ID Cards & Role Login */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <div
@@ -1918,6 +2123,17 @@ export default function JMCTCampusERP() {
             </button>
             <button
               type="button"
+              onClick={() => openMode("idcards")}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
+                view === "idcards"
+                  ? "bg-violet-700 text-white shadow-2xs"
+                  : "bg-violet-50 hover:bg-violet-100 text-violet-900 border border-violet-200"
+              }`}
+            >
+              ID Cards
+            </button>
+            <button
+              type="button"
               onClick={() => openMode("fees")}
               className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
                 view === "fees"
@@ -1940,7 +2156,7 @@ export default function JMCTCampusERP() {
             </button>
             <button
               type="button"
-              onClick={() => openMode("erp", "admin")}
+              onClick={() => openMode("erp", "teacher")}
               className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
                 view === "erp"
                   ? "bg-indigo-600 text-white shadow-2xs"
@@ -1992,7 +2208,7 @@ export default function JMCTCampusERP() {
       )}
 
       {/* =====================================================================
-          1. DEDICATED STUDENT LOGIN & PORTAL VIEW
+          1. DEDICATED STUDENT LOGIN & PORTAL VIEW (PERSONAL FEE ONLY)
       ===================================================================== */}
       {view === "student" && (
         <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
@@ -2000,11 +2216,11 @@ export default function JMCTCampusERP() {
             <div className="max-w-md mx-auto bg-white rounded-3xl p-7 border border-slate-200 shadow-sm space-y-4">
               <div className="border-b border-slate-100 pb-3">
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-600">
-                  DEDICATED STUDENT ACCESS
+                  DEDICATED STUDENT LOGIN
                 </span>
                 <h1 className="text-2xl font-black text-slate-900 mt-0.5">Student Login</h1>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Enter your Roll ID and password to open the student portal.
+                  Enter your Student Roll ID and password to view your own attendance, schedule & personal fee status.
                 </p>
               </div>
 
@@ -2027,7 +2243,7 @@ export default function JMCTCampusERP() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700">Password</label>
+                  <label className="text-xs font-bold text-slate-700">Student Password</label>
                   <input
                     required
                     type="password"
@@ -2045,7 +2261,7 @@ export default function JMCTCampusERP() {
               </form>
 
               <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-1.5 text-[11px]">
-                <span className="text-slate-400 font-bold">Quick Roll IDs:</span>
+                <span className="text-slate-400 font-bold">Demo Roll IDs:</span>
                 {students.slice(0, 3).map((s) => (
                   <button
                     key={s.id}
@@ -2076,6 +2292,16 @@ export default function JMCTCampusERP() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedIdCardStudentId(activeStudent.id);
+                          openMode("idcards", undefined, activeStudent.wing);
+                        }}
+                        className="px-3 py-2 rounded-xl bg-violet-50 hover:bg-violet-100 border border-violet-200 text-violet-900 text-xs font-extrabold cursor-pointer transition"
+                      >
+                        My Wing ID Card
+                      </button>
                       <button
                         type="button"
                         onClick={syncLiveStudentPortal}
@@ -2113,7 +2339,7 @@ export default function JMCTCampusERP() {
 
                     <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
                       <p className="text-[10px] font-extrabold uppercase text-slate-400">
-                        FEE PAID
+                        MY FEE PAID
                       </p>
                       <p className="text-2xl font-black text-indigo-700 mt-1 tabular-nums">
                         ₹{activeStudent.paidFee.toLocaleString("en-IN")}
@@ -2125,7 +2351,7 @@ export default function JMCTCampusERP() {
 
                     <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
                       <p className="text-[10px] font-extrabold uppercase text-slate-400">
-                        PENDING FEE DUE
+                        MY PENDING DUE
                       </p>
                       <p className="text-2xl font-black text-rose-600 mt-1 tabular-nums">
                         ₹{Math.max(0, activeStudent.totalFee - activeStudent.paidFee).toLocaleString("en-IN")}
@@ -2133,7 +2359,7 @@ export default function JMCTCampusERP() {
                       <p className="text-xs text-slate-500 mt-0.5">
                         {activeStudent.totalFee - activeStudent.paidFee === 0
                           ? "All dues cleared"
-                          : "Available in Fee System"}
+                          : "Available to pay online"}
                       </p>
                     </div>
 
@@ -2153,7 +2379,7 @@ export default function JMCTCampusERP() {
                             onClick={() => openOnlinePaymentModal(activeStudent)}
                             className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black cursor-pointer"
                           >
-                            Pay Fee Online
+                            Pay My Fee
                           </button>
                         )}
                         <button
@@ -2161,7 +2387,7 @@ export default function JMCTCampusERP() {
                           onClick={() => setReceiptStudent(activeStudent)}
                           className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
                         >
-                          Print / PDF Receipt
+                          Print Receipt
                         </button>
                       </div>
                     </div>
@@ -2258,17 +2484,17 @@ export default function JMCTCampusERP() {
       )}
 
       {/* =====================================================================
-          2. DEDICATED FEE SYSTEM VIEW
+          2. DEDICATED 3-WING ID CARDS VIEW (SCHOOL, PHARMACY, POLYTECHNIC)
       ===================================================================== */}
-      {view === "fees" && (
+      {view === "idcards" && (
         <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700">
-                DEDICATED ACCOUNTS & RECEIPT DESK
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-violet-700">
+                CAMPUS IDENTITY DESK • 3 SEPARATE WINGS
               </span>
               <h1 className="text-2xl font-black text-slate-900 mt-0.5">
-                Fee System, Dues & Receipts
+                Wing-Wise Student ID Cards (School • Pharmacy • Polytechnic)
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -2276,9 +2502,266 @@ export default function JMCTCampusERP() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search roll ID, student, wing..."
+                placeholder="Search name, roll ID, course..."
+                className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold w-52"
+              />
+              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
+                {(["All", "School", "Pharmacy", "Polytechnic"] as const).map((w) => (
+                  <button
+                    key={w}
+                    type="button"
+                    onClick={() => setWingFilter(w)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer ${
+                      wingFilter === w
+                        ? "bg-violet-700 text-white shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {w === "All" ? "All 3 Wings" : w}
+                  </button>
+                ))}
+              </div>
+              {selectedIdCardStudent && (
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-slate-900 text-white cursor-pointer"
+                >
+                  Print Selected ID Card
+                </button>
+              )}
+            </div>
+          </div>
+
+          {selectedIdCardStudent && (
+            <div className="bg-white rounded-2xl p-6 border border-violet-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="w-full max-w-sm rounded-2xl overflow-hidden border border-slate-300 bg-white shadow-md">
+                <div
+                  className={`p-4 text-white ${
+                    selectedIdCardStudent.wing === "School"
+                      ? "bg-[#0F294A]"
+                      : selectedIdCardStudent.wing === "Pharmacy"
+                      ? "bg-[#312E81]"
+                      : "bg-[#7C2D12]"
+                  }`}
+                >
+                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-300">
+                    JMCT GROUP OF INSTITUTIONS • NASHIK
+                  </p>
+                  <p className="text-sm font-black mt-0.5">
+                    {selectedIdCardStudent.wing === "School"
+                      ? "JMCT International School (CBSE)"
+                      : selectedIdCardStudent.wing === "Pharmacy"
+                      ? "JMCT College of Pharmacy (PCI)"
+                      : "JMCT Polytechnic College (MSBTE)"}
+                  </p>
+                </div>
+                <div className="p-5 flex items-center gap-4">
+                  <div className="w-16 h-20 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-xl text-slate-700 shrink-0">
+                    {selectedIdCardStudent.name
+                      .split(" ")
+                      .map((p) => p[0])
+                      .slice(0, 2)
+                      .join("")}
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    <p className="text-base font-black text-slate-900">
+                      {selectedIdCardStudent.name}
+                    </p>
+                    <p className="font-mono font-extrabold text-indigo-700">
+                      ID: {selectedIdCardStudent.id}
+                    </p>
+                    <p className="font-semibold text-slate-700">
+                      {selectedIdCardStudent.course}
+                    </p>
+                    <p className="text-slate-500">
+                      Wing: <strong>{selectedIdCardStudent.wing}</strong> • Ph:{" "}
+                      {selectedIdCardStudent.phone}
+                    </p>
+                  </div>
+                </div>
+                <div className="px-5 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] font-bold text-slate-600">
+                  <span>Session: 2026–27</span>
+                  <span className="text-emerald-700 font-extrabold">VALID CAMPUS ID</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs max-w-md print:hidden">
+                <span className="px-2.5 py-1 rounded bg-violet-100 text-violet-900 font-extrabold">
+                  SELECTED ID CARD PREVIEW
+                </span>
+                <h2 className="text-lg font-black text-slate-900 pt-1">
+                  {selectedIdCardStudent.name} ({selectedIdCardStudent.wing} Wing)
+                </h2>
+                <p className="text-slate-600 leading-relaxed">
+                  Each wing card displays the respective institution header, Roll ID, course/batch,
+                  contact number, and 2026–27 session tag. Click <strong>Print Selected ID Card</strong>{" "}
+                  to print or save as PDF.
+                </p>
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="px-4 py-2 rounded-xl bg-violet-700 hover:bg-violet-600 text-white font-extrabold cursor-pointer"
+                  >
+                    Print / Save PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIdCardStudentId(null)}
+                    className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold cursor-pointer"
+                  >
+                    Clear Preview
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 print:hidden">
+            {filteredStudents.map((s) => (
+              <div
+                key={s.id}
+                className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden flex flex-col justify-between"
+              >
+                <div>
+                  <div
+                    className={`px-4 py-2.5 text-white flex items-center justify-between text-xs font-extrabold ${
+                      s.wing === "School"
+                        ? "bg-[#0F294A]"
+                        : s.wing === "Pharmacy"
+                        ? "bg-[#312E81]"
+                        : "bg-[#7C2D12]"
+                    }`}
+                  >
+                    <span>{s.wing.toUpperCase()} WING ID CARD</span>
+                    <span className="font-mono text-amber-300">{s.id}</span>
+                  </div>
+                  <div className="p-5 space-y-1.5">
+                    <h3 className="text-base font-black text-slate-900">{s.name}</h3>
+                    <p className="text-xs font-semibold text-slate-600">{s.course}</p>
+                    <p className="text-xs text-slate-500">Contact: {s.phone}</p>
+                  </div>
+                </div>
+                <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500">2026–27</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIdCardStudentId(s.id)}
+                    className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-violet-700 text-white text-xs font-extrabold cursor-pointer transition"
+                  >
+                    Preview & Print ID
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          3. PRIVATE FEE SYSTEM VIEW (OVERALL COLLECTION HIDDEN UNLESS ADMIN)
+      ===================================================================== */}
+      {view === "fees" && (
+        <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700">
+                PROTECTED FEE & RECEIPT DESK
+              </span>
+              <h1 className="text-2xl font-black text-slate-900 mt-0.5">
+                Fee Payment & Receipt Desk
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Overall campus fee totals stay hidden from public view. Sign in as Admin for full ledger totals.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search roll ID or student name..."
                 className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold w-48"
               />
+              {!canViewOverallFees ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleLoginRoleChange("admin");
+                    setShowLoginModal(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
+                >
+                  Admin Login for Totals
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={exportCsvReport}
+                  className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 cursor-pointer"
+                >
+                  ↓ Export Fee CSV
+                </button>
+              )}
+            </div>
+          </div>
+
+          {canViewOverallFees ? (
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-emerald-600 shadow-2xs">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                  Total Fee Collected (Admin Only)
+                </p>
+                <p className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
+                  ₹{totalCollected.toLocaleString("en-IN")}
+                </p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-2xs">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                  Pending Dues (Admin Only)
+                </p>
+                <p className="text-2xl font-black text-rose-600 mt-1 tabular-nums">
+                  ₹{totalPending.toLocaleString("en-IN")}
+                </p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-indigo-600 shadow-2xs">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                  Recorded Transactions
+                </p>
+                <p className="text-2xl font-black text-indigo-600 mt-1 tabular-nums">
+                  {paymentHistory.length} Txns
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-slate-900 text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-amber-300">
+                  PRIVACY MODE ENABLED
+                </p>
+                <p className="text-xs text-slate-200 mt-0.5">
+                  Aggregate fee collection figures are hidden from public visitors. Search a Roll ID below to pay or view a specific student receipt.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  handleLoginRoleChange("admin");
+                  setShowLoginModal(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black cursor-pointer shrink-0"
+              >
+                Unlock Admin View
+              </button>
+            </div>
+          )}
+
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-black text-base text-slate-900">
+                Student Fee & Payment Lookup ({filteredStudents.length})
+              </h2>
               <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80 text-xs font-extrabold">
                 {(
                   [
@@ -2301,48 +2784,6 @@ export default function JMCTCampusERP() {
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={exportCsvReport}
-                className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 cursor-pointer"
-              >
-                ↓ Export Fee CSV
-              </button>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-emerald-600 shadow-2xs">
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                Total Fee Collected
-              </p>
-              <p className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
-                ₹{totalCollected.toLocaleString("en-IN")}
-              </p>
-            </div>
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-2xs">
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                Pending Dues
-              </p>
-              <p className="text-2xl font-black text-rose-600 mt-1 tabular-nums">
-                ₹{totalPending.toLocaleString("en-IN")}
-              </p>
-            </div>
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-indigo-600 shadow-2xs">
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                Recorded Transactions
-              </p>
-              <p className="text-2xl font-black text-indigo-600 mt-1 tabular-nums">
-                {paymentHistory.length} Txns
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100">
-              <h2 className="font-black text-base text-slate-900">
-                Student Fee Ledger ({filteredStudents.length})
-              </h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -2351,17 +2792,13 @@ export default function JMCTCampusERP() {
                     <th className="px-5 py-3">Roll ID</th>
                     <th className="px-5 py-3">Student</th>
                     <th className="px-5 py-3">Wing & Course</th>
-                    <th className="px-5 py-3">Fee Progress</th>
+                    <th className="px-5 py-3">Fee Status</th>
                     <th className="px-5 py-3 text-right">Fee Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredStudents.map((s) => {
                     const due = Math.max(0, s.totalFee - s.paidFee);
-                    const paidPct =
-                      s.totalFee > 0
-                        ? Math.min(100, Math.round((s.paidFee / s.totalFee) * 100))
-                        : 100;
                     return (
                       <tr key={s.id} className="hover:bg-slate-50/80">
                         <td className="px-5 py-3.5 font-mono text-xs font-bold text-indigo-600">
@@ -2377,23 +2814,17 @@ export default function JMCTCampusERP() {
                           </span>
                           <p className="text-xs text-slate-600 mt-0.5">{s.course}</p>
                         </td>
-                        <td className="px-5 py-3.5 min-w-[160px]">
-                          <div className="flex justify-between text-[11px] font-bold tabular-nums mb-1">
-                            <span className="text-slate-800">
-                              ₹{s.paidFee.toLocaleString("en-IN")}
+                        <td className="px-5 py-3.5 text-xs font-bold tabular-nums">
+                          {canViewOverallFees || activeStudent.id === s.id ? (
+                            <span>
+                              Paid ₹{s.paidFee.toLocaleString("en-IN")} / ₹
+                              {s.totalFee.toLocaleString("en-IN")}
                             </span>
-                            <span className="text-slate-400">
-                              / ₹{s.totalFee.toLocaleString("en-IN")}
+                          ) : (
+                            <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-600">
+                              {due === 0 ? "Cleared" : "Balance Available"}
                             </span>
-                          </div>
-                          <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${
-                                due === 0 ? "bg-emerald-500" : "bg-amber-500"
-                              }`}
-                              style={{ width: `${paidPct}%` }}
-                            />
-                          </div>
+                          )}
                         </td>
                         <td className="px-5 py-3.5 text-right whitespace-nowrap space-x-1.5">
                           {due > 0 ? (
@@ -2402,7 +2833,7 @@ export default function JMCTCampusERP() {
                               onClick={() => openOnlinePaymentModal(s)}
                               className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer tabular-nums"
                             >
-                              Pay ₹{due.toLocaleString("en-IN")}
+                              Pay Fee
                             </button>
                           ) : (
                             <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
@@ -2424,40 +2855,11 @@ export default function JMCTCampusERP() {
               </table>
             </div>
           </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100">
-              <h3 className="font-black text-base text-slate-900">
-                Recent Fee Transactions ({paymentHistory.length})
-              </h3>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {paymentHistory.map((p) => (
-                <div
-                  key={p.txnId}
-                  className="px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs"
-                >
-                  <div>
-                    <p className="font-mono font-bold text-indigo-700">
-                      {p.txnId} • {p.studentName} ({p.studentId})
-                    </p>
-                    <p className="text-slate-500 mt-0.5">
-                      {p.method}
-                      {p.upiId ? ` (${p.upiId})` : ""} • {p.paidAt}
-                    </p>
-                  </div>
-                  <span className="font-black text-emerald-700 text-sm tabular-nums">
-                    + ₹{p.amount.toLocaleString("en-IN")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
       {/* =====================================================================
-          3. DEDICATED SIS (STUDENT INFORMATION SYSTEM) VIEW
+          4. DEDICATED SIS (STUDENT INFORMATION SYSTEM) VIEW (NO PUBLIC FEE TOTALS)
       ===================================================================== */}
       {view === "sis" && (
         <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
@@ -2508,7 +2910,6 @@ export default function JMCTCampusERP() {
             {filteredStudents.map((s) => {
               const attPct =
                 s.totalDays > 0 ? Math.round((s.presentDays / s.totalDays) * 100) : 100;
-              const due = Math.max(0, s.totalFee - s.paidFee);
               return (
                 <div
                   key={s.id}
@@ -2535,44 +2936,38 @@ export default function JMCTCampusERP() {
                     <p className="text-xs text-slate-400 mt-0.5">Contact: {s.phone}</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs tabular-nums">
-                    <div className="rounded-xl bg-slate-50 p-2.5">
-                      <p className="text-[10px] font-bold text-slate-400">ATTENDANCE</p>
-                      <p
-                        className={`text-sm font-black mt-0.5 ${
-                          attPct < 75 ? "text-rose-600" : "text-emerald-600"
-                        }`}
-                      >
-                        {attPct}% ({s.presentDays}/{s.totalDays})
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50 p-2.5">
-                      <p className="text-[10px] font-bold text-slate-400">FEE DUE</p>
-                      <p className="text-sm font-black text-slate-900 mt-0.5">
-                        ₹{due.toLocaleString("en-IN")}
-                      </p>
-                    </div>
+                  <div className="rounded-xl bg-slate-50 p-2.5 text-xs tabular-nums">
+                    <p className="text-[10px] font-bold text-slate-400">ATTENDANCE</p>
+                    <p
+                      className={`text-sm font-black mt-0.5 ${
+                        attPct < 75 ? "text-rose-600" : "text-emerald-600"
+                      }`}
+                    >
+                      {attPct}% ({s.presentDays}/{s.totalDays})
+                    </p>
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
                     <button
                       type="button"
                       onClick={() => {
+                        setSelectedIdCardStudentId(s.id);
+                        openMode("idcards", undefined, s.wing);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-900 text-xs font-extrabold cursor-pointer"
+                    >
+                      ID Card
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
                         setStudentPortalId(s.id);
                         setStudentLoginRollInput(s.id);
-                        setStudentUnlocked(true);
                         openMode("student");
                       }}
                       className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer"
                     >
-                      Open Student View
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setReceiptStudent(s)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold cursor-pointer"
-                    >
-                      Receipt
+                      Student Login
                     </button>
                   </div>
                 </div>
@@ -2583,7 +2978,7 @@ export default function JMCTCampusERP() {
       )}
 
       {/* =====================================================================
-          4. HOME PAGE VIEW (ORDERED PRESENTATION FLOW ON VISIT)
+          5. HOME PAGE VIEW (NO PUBLIC FEE COLLECTION TOTALS)
       ===================================================================== */}
       {view === "portal" && (
         <>
@@ -2597,8 +2992,8 @@ export default function JMCTCampusERP() {
                   School (CBSE), Pharmacy (PCI) & Polytechnic (MSBTE)
                 </h1>
                 <p className="text-sm sm:text-base text-slate-200 max-w-2xl leading-relaxed">
-                  Separate portals arranged in a clear flow: Student Login & Portal, Fee System, SIS
-                  Directory, and Staff & ERP — every workflow in its own place without clutter.
+                  Dedicated logins for every role — Teacher, Peon, Guard, Coordinator, Admin,
+                  Parent & Student — plus 3-wing ID cards and private fee handling.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-1">
                   <button
@@ -2610,85 +3005,56 @@ export default function JMCTCampusERP() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => openMode("fees")}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs sm:text-sm font-black cursor-pointer transition"
+                    onClick={() => openMode("idcards")}
+                    className="px-5 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-400 text-white text-xs sm:text-sm font-black cursor-pointer transition"
                   >
-                    Fee System
+                    3-Wing ID Cards
                   </button>
                   <button
                     type="button"
-                    onClick={() => openMode("sis")}
+                    onClick={() => openMode("erp", "teacher")}
                     className="px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs sm:text-sm font-extrabold cursor-pointer transition"
                   >
-                    SIS Directory
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openMode("erp", "admin")}
-                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs sm:text-sm font-bold cursor-pointer transition"
-                  >
-                    Staff & ERP Desk
+                    Staff & Role Logins
                   </button>
                 </div>
               </div>
 
               <div className="lg:col-span-5">
-                <div className="rounded-2xl bg-slate-950/55 border border-white/15 p-5 space-y-3 backdrop-blur-xs">
+                <div className="rounded-2xl bg-slate-950/60 border border-white/15 p-5 space-y-3 backdrop-blur-xs">
                   <div className="flex items-center justify-between text-xs font-bold text-amber-300">
-                    <span>LIVE CAMPUS SNAPSHOT</span>
-                    <span className="tabular-nums">
-                      {presentTodayCount}/{students.length} Present
+                    <span>DEDICATED ROLE LOGINS</span>
+                    <span>SELECT ROLE</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    {(
+                      [
+                        ["teacher", "Teacher Login"],
+                        ["peon", "Peon Login"],
+                        ["guard", "Guard Login"],
+                        ["coordinator", "Coordinator"],
+                        ["admin", "Admin Login"],
+                        ["parent", "Parent Login"],
+                      ] as const
+                    ).map(([rKey, rLabel]) => (
+                      <button
+                        key={rKey}
+                        type="button"
+                        onClick={() => {
+                          handleLoginRoleChange(rKey);
+                          setShowLoginModal(true);
+                        }}
+                        className="p-2.5 rounded-xl bg-white/10 hover:bg-amber-400 hover:text-slate-950 font-extrabold text-left cursor-pointer transition"
+                      >
+                        {rLabel} →
+                      </button>
+                    ))}
+                  </div>
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300">
+                    <span>Fee Collection Summary</span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold">
+                      Hidden from Public
                     </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-white/10 p-3.5">
-                      <p className="text-[10px] font-extrabold uppercase text-slate-300">
-                        Fee Collected
-                      </p>
-                      <p className="text-xl font-black text-white mt-0.5 tabular-nums">
-                        ₹{totalCollected.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-white/10 p-3.5">
-                      <p className="text-[10px] font-extrabold uppercase text-slate-300">
-                        Pending Dues
-                      </p>
-                      <p className="text-xl font-black text-amber-300 mt-0.5 tabular-nums">
-                        ₹{totalPending.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <button
-                      type="button"
-                      onClick={() => openMode("erp", "peon")}
-                      className="p-2.5 rounded-lg bg-white/10 hover:bg-white/15 cursor-pointer"
-                    >
-                      <p className="font-extrabold">Peon Duty</p>
-                      <p className="text-[11px] text-slate-300 tabular-nums">
-                        {completedPeonCount}/{visiblePeonTasks.length} Done
-                      </p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openMode("erp", "guard")}
-                      className="p-2.5 rounded-lg bg-white/10 hover:bg-white/15 cursor-pointer"
-                    >
-                      <p className="font-extrabold">Gate Log</p>
-                      <p className="text-[11px] text-slate-300 tabular-nums">
-                        {insideGateCount} Inside
-                      </p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openMode("erp", "qbank")}
-                      className="p-2.5 rounded-lg bg-white/10 hover:bg-white/15 cursor-pointer"
-                    >
-                      <p className="font-extrabold">Question Bank</p>
-                      <p className="text-[11px] text-slate-300 tabular-nums">
-                        {questions.length} Qs
-                      </p>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -2725,7 +3091,7 @@ export default function JMCTCampusERP() {
                 </h2>
               </div>
               <p className="text-xs text-slate-500 font-semibold">
-                Step 01 Portals • Step 02 Attendance & Fees • Step 03 SIS & Operations
+                Step 01 Role Logins • Step 02 Wing ID Cards • Step 03 Private Fees & SIS
               </p>
             </div>
 
@@ -2758,7 +3124,7 @@ export default function JMCTCampusERP() {
             <div className="max-w-7xl mx-auto px-6 space-y-10">
               <div className="text-center space-y-4">
                 <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400">
-                  Separate Portals & Quick Links
+                  Separate Portals & Role Shortcuts
                 </p>
                 <div className="flex flex-wrap justify-center gap-5 sm:gap-8">
                   {QUICK_CIRCLES.map((qc) => (
@@ -2794,10 +3160,10 @@ export default function JMCTCampusERP() {
                   <div className="pt-2 flex items-center justify-between gap-2">
                     <button
                       type="button"
-                      onClick={() => openMode("erp", "qbank")}
+                      onClick={() => openMode("idcards")}
                       className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer shrink-0"
                     >
-                      Question Bank
+                      3-Wing ID Cards
                     </button>
                     <span className="text-xs text-blue-200 font-semibold truncate">
                       {NEWS_AND_EVENTS[1].title}
@@ -2882,15 +3248,15 @@ export default function JMCTCampusERP() {
                   </p>
                   <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
                     Our three wings — School (CBSE), Pharmacy (PCI), and Polytechnic (MSBTE) —
-                    combine academic rigor with everyday operational clarity. Through dedicated
-                    portals for Students, Fees, SIS, and Staff, every workflow stays organized.
+                    combine academic rigor with everyday operational clarity. Each role has its own
+                    login and dedicated workspace.
                   </p>
                   <button
                     type="button"
                     onClick={() => openMode("erp", "teacher")}
                     className="mt-1 px-4 py-1.5 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer"
                   >
-                    Open Faculty Desk
+                    Open Teacher Login
                   </button>
                 </div>
               </div>
@@ -2898,56 +3264,9 @@ export default function JMCTCampusERP() {
           </section>
 
           <section id="institutions" className="max-w-7xl mx-auto px-6 py-12 space-y-10">
-            <div className="grid md:grid-cols-12 gap-6 items-center bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
-              <div className="md:col-span-7 space-y-2">
-                <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#0F294A]">
-                  Life at JMCT Nashik
-                </p>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Students across School, Pharmacy, and Polytechnic learn in structured classrooms,
-                  science & formulation laboratories, and technical workshops while Student Portal,
-                  Fee System, and SIS operate as separate dedicated desks.
-                </p>
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => openMode("student")}
-                    className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer"
-                  >
-                    Student Login
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openMode("fees")}
-                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold cursor-pointer"
-                  >
-                    Fee System
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openMode("sis")}
-                    className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold cursor-pointer"
-                  >
-                    SIS Directory
-                  </button>
-                </div>
-              </div>
-              <div className="md:col-span-5 rounded-xl bg-gradient-to-r from-[#0F294A] to-indigo-700 text-white p-5">
-                <p className="text-xs font-extrabold uppercase text-amber-300">
-                  Wadala Road Campus • Nashik
-                </p>
-                <p className="text-lg font-black mt-1">
-                  3 Academic Wings • Dedicated Portals
-                </p>
-                <p className="text-xs text-slate-200 mt-1">
-                  CBSE School • PCI Pharmacy • MSBTE Polytechnic
-                </p>
-              </div>
-            </div>
-
             <div className="space-y-5">
               <h2 className="text-center text-xl sm:text-2xl font-black uppercase tracking-wider text-slate-900">
-                Our Institutions
+                Our Institutions & Wing ID Cards
               </h2>
               <div className="grid md:grid-cols-3 gap-5">
                 {WING_INSTITUTIONS.map((inst) => (
@@ -2966,17 +3285,17 @@ export default function JMCTCampusERP() {
                     <div className="pt-3 border-t border-white/15 flex items-center justify-between text-xs">
                       <button
                         type="button"
-                        onClick={() => openMode("erp", "teacher", inst.wing)}
+                        onClick={() => openMode("idcards", undefined, inst.wing)}
                         className="font-extrabold text-amber-300 hover:underline cursor-pointer"
                       >
-                        {inst.wing} Desk →
+                        {inst.wing} ID Cards →
                       </button>
                       <button
                         type="button"
-                        onClick={() => openMode("erp", "qbank", inst.wing)}
+                        onClick={() => openMode("erp", "teacher", inst.wing)}
                         className="font-bold text-slate-200 hover:text-white cursor-pointer"
                       >
-                        Question Bank
+                        Teacher Login
                       </button>
                     </div>
                   </div>
@@ -2992,7 +3311,7 @@ export default function JMCTCampusERP() {
                   onClick={() => openMode("erp", "teacher")}
                   className="text-xs font-extrabold text-[#0F294A] hover:underline cursor-pointer"
                 >
-                  Open Teacher Desk →
+                  Teacher Desk →
                 </button>
               </div>
               <div className="grid md:grid-cols-3 gap-4">
@@ -3016,13 +3335,13 @@ export default function JMCTCampusERP() {
           <section id="modules" className="max-w-7xl mx-auto px-6 py-10 space-y-6">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-700">
-                SEPARATE PORTALS & ERP MODULES
+                SEPARATE PORTALS, ID CARDS & ERP MODULES
               </p>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-                Every system has its own dedicated desk.
+                Every role and wing has its own desk.
               </h2>
               <p className="text-xs sm:text-sm text-slate-600">
-                Click any card to open its dedicated page or desk.
+                Click any card to open its dedicated page or login desk.
               </p>
             </div>
 
@@ -3118,7 +3437,7 @@ export default function JMCTCampusERP() {
                   <h3 className="text-lg font-black text-slate-900">{tourTab} Desk Preview</h3>
                   <p className="text-xs text-slate-500">
                     {tourTab === "Dashboard" &&
-                      "Live summary of student count, fee collection, and campus modules."}
+                      "Role-based campus summary across School, Pharmacy, and Polytechnic wings."}
                     {tourTab === "Attendance" &&
                       "Wing and class-wise roll call for School (CBSE), Pharmacy (PCI), and Polytechnic (MSBTE)."}
                     {tourTab === "Peon Duty" &&
@@ -3126,7 +3445,7 @@ export default function JMCTCampusERP() {
                     {tourTab === "Gate Pass" &&
                       "Visitor, parent, and vendor entry/exit log at campus security gate."}
                     {tourTab === "Fees" &&
-                      "Online UPI/Card/NetBanking fee collection and printable receipt generation."}
+                      "Protected fee payment & printable receipt workflow."}
                     {tourTab === "Question Bank" &&
                       "Permitted Coordinators only; edit questions, select items, and print structured papers."}
                     {tourTab === "Timetable" &&
@@ -3164,7 +3483,7 @@ export default function JMCTCampusERP() {
                   }}
                   className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold cursor-pointer"
                 >
-                  Open Live {tourTab} →
+                  Open {tourTab} Login →
                 </button>
               </div>
 
@@ -3184,41 +3503,17 @@ export default function JMCTCampusERP() {
                   <p className="text-xs text-slate-500 mt-1">Saved locally & active</p>
                 </div>
                 <div className="rounded-xl bg-slate-50 border border-slate-200 p-4">
-                  <p className="text-xs font-bold text-slate-500">FEE COLLECTION</p>
-                  <p className="text-2xl font-black text-indigo-700 mt-1 tabular-nums">
-                    ₹{totalCollected.toLocaleString("en-IN")}
+                  <p className="text-xs font-bold text-slate-500">FEE VISIBILITY</p>
+                  <p className="text-xl font-black text-indigo-700 mt-1">
+                    {canViewOverallFees ? `₹${totalCollected.toLocaleString("en-IN")}` : "Protected"}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">Receipts ready</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {canViewOverallFees ? "Admin view active" : "Hidden from public view"}
+                  </p>
                 </div>
               </div>
             </div>
           </section>
-
-          <div className="bg-[#181B20] text-white py-8">
-            <div className="max-w-7xl mx-auto px-6">
-              <p className="text-xs font-black uppercase tracking-widest text-amber-400 mb-4">
-                Campus Overview
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
-                {[
-                  { label: "Academic Wings", val: "3 Wings" },
-                  { label: "Enrolled Students", val: `${students.length} Active` },
-                  { label: "Timetable & HW", val: `${timetableSlots.length}P / ${homeworkList.length}HW` },
-                  { label: "Inventory & HR", val: `${inventoryList.length}I / ${hrStaffList.length}S` },
-                  { label: "Question Bank", val: `${questions.length} Questions` },
-                  { label: "Alerts & Fees", val: `${notificationsData.length} Alerts` },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-xl bg-white/5 border border-white/10 p-3.5"
-                  >
-                    <p className="text-sm font-black text-amber-300 tabular-nums">{item.val}</p>
-                    <p className="text-[11px] text-slate-300 mt-0.5">{item.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
           <footer className="bg-[#0F294A] text-slate-200 pt-10 pb-6 px-6 text-xs">
             <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-8 border-b border-white/15">
@@ -3237,10 +3532,10 @@ export default function JMCTCampusERP() {
                   <li>
                     <button
                       type="button"
-                      onClick={() => openMode("fees")}
+                      onClick={() => openMode("idcards")}
                       className="hover:text-amber-300 cursor-pointer"
                     >
-                      Fee System & Receipts
+                      3-Wing ID Cards
                     </button>
                   </li>
                   <li>
@@ -3256,12 +3551,45 @@ export default function JMCTCampusERP() {
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-black text-white uppercase tracking-wider">Admissions & Wings</h4>
+                <h4 className="font-black text-white uppercase tracking-wider">Role Logins</h4>
                 <ul className="space-y-1.5">
                   <li>
                     <button
                       type="button"
-                      onClick={() => openMode("erp", "teacher", "School")}
+                      onClick={() => openMode("erp", "teacher")}
+                      className="hover:text-amber-300 cursor-pointer"
+                    >
+                      Teacher Login
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => openMode("erp", "peon")}
+                      className="hover:text-amber-300 cursor-pointer"
+                    >
+                      Peon Login
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => openMode("erp", "guard")}
+                      className="hover:text-amber-300 cursor-pointer"
+                    >
+                      Security Guard Login
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-black text-white uppercase tracking-wider">Wings</h4>
+                <ul className="space-y-1.5">
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => openMode("idcards", undefined, "School")}
                       className="hover:text-amber-300 cursor-pointer"
                     >
                       JMCT School (CBSE)
@@ -3270,7 +3598,7 @@ export default function JMCTCampusERP() {
                   <li>
                     <button
                       type="button"
-                      onClick={() => openMode("erp", "teacher", "Pharmacy")}
+                      onClick={() => openMode("idcards", undefined, "Pharmacy")}
                       className="hover:text-amber-300 cursor-pointer"
                     >
                       JMCT Pharmacy (PCI)
@@ -3279,43 +3607,10 @@ export default function JMCTCampusERP() {
                   <li>
                     <button
                       type="button"
-                      onClick={() => openMode("erp", "teacher", "Polytechnic")}
+                      onClick={() => openMode("idcards", undefined, "Polytechnic")}
                       className="hover:text-amber-300 cursor-pointer"
                     >
                       JMCT Polytechnic (MSBTE)
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-black text-white uppercase tracking-wider">Staff & ERP Desks</h4>
-                <ul className="space-y-1.5">
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => openMode("erp", "timetable")}
-                      className="hover:text-amber-300 cursor-pointer"
-                    >
-                      Timetable & Homework Desk
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => openMode("erp", "inventory")}
-                      className="hover:text-amber-300 cursor-pointer"
-                    >
-                      Inventory & HR Staff Log
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => openMode("erp", "qbank")}
-                      className="hover:text-amber-300 cursor-pointer"
-                    >
-                      Question Bank (Coordinator)
                     </button>
                   </li>
                 </ul>
@@ -3338,682 +3633,550 @@ export default function JMCTCampusERP() {
       )}
 
       {/* =====================================================================
-          5. STAFF & ERP OPERATIONS VIEW
+          6. STAFF & ERP OPERATIONS VIEW (WITH DEDICATED ROLE LOGIN GATE)
       ===================================================================== */}
       {view === "erp" && (
         <div className="max-w-7xl mx-auto px-6 py-6 space-y-5">
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-600">
-                JMCT NASHIK • STAFF & OPERATIONS DESK
-              </p>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
-                Campus ERP Operations Desk
-              </h1>
-            </div>
+          {!isErpTabAuthorized(roleTab) ? (
+            <div className="max-w-xl mx-auto bg-white rounded-3xl p-7 border border-slate-200 shadow-sm space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                  DEDICATED ROLE LOGIN GATE
+                </span>
+                <h1 className="text-2xl font-black text-slate-900 mt-0.5">
+                  {ROLE_CREDENTIALS[gateRole].title}
+                </h1>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {ROLE_CREDENTIALS[gateRole].subtitle}
+                </p>
+              </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search ID, name, class, year, subject..."
-                className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold w-52 focus:bg-white focus:border-indigo-500 outline-none transition"
-              />
-              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
-                {(["All", "School", "Pharmacy", "Polytechnic"] as const).map((w) => (
+              <div className="flex flex-wrap gap-1.5">
+                {(
+                  [
+                    ["teacher", "Teacher"],
+                    ["peon", "Peon"],
+                    ["guard", "Guard"],
+                    ["coordinator", "Coordinator"],
+                    ["admin", "Admin"],
+                    ["parent", "Parent"],
+                  ] as const
+                ).map(([rKey, rLabel]) => (
                   <button
-                    key={w}
+                    key={rKey}
                     type="button"
-                    onClick={() => setWingFilter(w)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer ${
-                      wingFilter === w
-                        ? "bg-indigo-600 text-white shadow-2xs"
-                        : "text-slate-600 hover:text-slate-900"
+                    onClick={() => prepareRoleGate(rKey)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                      gateRole === rKey
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
                     }`}
                   >
-                    {w === "All" ? "All Wings (3)" : w}
+                    {rLabel}
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={exportCsvReport}
-                className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer whitespace-nowrap"
-              >
-                ↓ Export CSV
-              </button>
-              <button
-                type="button"
-                onClick={handleResetDemoData}
-                title="Reset sample data after testing"
-                className="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer whitespace-nowrap"
-              >
-                Reset Demo
-              </button>
-            </div>
-          </div>
 
-          <div className="space-y-2.5 print:hidden">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-              {(
-                [
-                  ["admin", "01 • ADMIN", "Admissions & Fees"],
-                  ["teacher", "02 • TEACHERS", "Attendance & Q-Upload"],
-                  ["peon", "03 • PEON SYSTEM", "Duty & Cleaning"],
-                  ["guard", "04 • SECURITY", "Gate Pass Log"],
-                  ["parent", "05 • PARENTS", "Status & Online Pay"],
-                  ["qbank", "06 • QUESTION BANK", hasCoordinatorPermission ? "Permitted Access" : "Coordinator Only"],
-                ] as const
-              ).map(([key, tag, title]) => (
+              {gateError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
+                  ⚠ {gateError}
+                </div>
+              )}
+
+              <form onSubmit={handleRoleGateSubmit} className="space-y-3.5">
+                <div>
+                  <label className="text-xs font-bold text-slate-700">
+                    {ROLE_CREDENTIALS[gateRole].idLabel}
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={gateIdentifier}
+                    onChange={(e) => setGateIdentifier(e.target.value)}
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700">
+                    {gateRole === "coordinator" ? "Coordinator Passcode" : "Role Password"}
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    value={gatePassword}
+                    onChange={(e) => setGatePassword(e.target.value)}
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
+                  />
+                </div>
                 <button
-                  key={key}
-                  type="button"
-                  onClick={() => setRoleTab(key)}
-                  className={`p-3 rounded-xl border text-left transition cursor-pointer ${
-                    roleTab === key
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                      : "bg-white text-slate-800 border-slate-200/90 hover:border-indigo-300"
-                  }`}
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
                 >
-                  <p
-                    className={`text-[10px] font-extrabold tracking-wider ${
-                      roleTab === key ? "text-indigo-100" : "text-slate-400"
-                    }`}
-                  >
-                    {tag}
-                  </p>
-                  <p className="text-xs sm:text-sm font-black mt-0.5">{title}</p>
+                  Sign In as {ROLE_CREDENTIALS[gateRole].title} →
                 </button>
-              ))}
+              </form>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              {(
-                [
-                  ["timetable", "TIMETABLE", `${timetableSlots.length} Periods`],
-                  ["homework", "HOMEWORK", `${homeworkList.length} Tasks`],
-                  ["inventory", "INVENTORY", `${inventoryList.length} Items`],
-                  ["hr", "HR & STAFF LOG", `${hrStaffList.length} Staff`],
-                  ["notifications", "NOTIFICATIONS", `${notificationsData.length} Alerts`],
-                ] as const
-              ).map(([key, title, sub]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setRoleTab(key)}
-                  className={`px-3.5 py-2.5 rounded-xl border flex items-center justify-between gap-2 transition cursor-pointer ${
-                    roleTab === key
-                      ? "bg-slate-900 text-white border-slate-900 shadow-2xs"
-                      : "bg-white text-slate-800 border-slate-200/90 hover:border-slate-400"
-                  }`}
-                >
-                  <span className="text-xs font-black tracking-wide">{title}</span>
-                  <span
-                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full tabular-nums ${
-                      roleTab === key
-                        ? "bg-amber-400 text-slate-950"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {sub}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 1. ADMIN DESK */}
-          {roleTab === "admin" && (
-            <div className="space-y-5">
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-indigo-600 shadow-2xs">
-                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                    Total Students
+          ) : (
+            <>
+              <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-600">
+                    JMCT NASHIK • {authUser?.label.toUpperCase()}
                   </p>
-                  <p className="text-2xl font-black text-indigo-600 mt-1 tabular-nums">
-                    {students.length}
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-emerald-600 shadow-2xs">
-                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                    Total Fee Collected
-                  </p>
-                  <p className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
-                    ₹{totalCollected.toLocaleString("en-IN")}
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-2xs">
-                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                    Pending Dues
-                  </p>
-                  <p className="text-2xl font-black text-rose-600 mt-1 tabular-nums">
-                    ₹{totalPending.toLocaleString("en-IN")}
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-amber-500 shadow-2xs">
-                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                    Active Gate Passes
-                  </p>
-                  <p className="text-2xl font-black text-amber-600 mt-1 tabular-nums">
-                    {insideGateCount} Inside
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid lg:grid-cols-12 gap-6 items-start">
-                <form
-                  onSubmit={handleAddStudent}
-                  className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4"
-                >
-                  <div className="border-b border-slate-100 pb-3">
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                      ADMISSIONS COUNTER
-                    </p>
-                    <h2 className="text-lg font-black text-slate-900">+ New Student Admission</h2>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Student Full Name</label>
-                    <input
-                      required
-                      type="text"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      placeholder="e.g. Pranav Deshpande"
-                      className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium focus:bg-white focus:border-indigo-500 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Select Wing</label>
-                    <select
-                      value={newWing}
-                      onChange={(e) => setNewWing(e.target.value as Wing)}
-                      className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-800 focus:bg-white focus:border-indigo-500 outline-none"
-                    >
-                      <option value="School">JMCT International School (CBSE)</option>
-                      <option value="Pharmacy">JMCT College of Pharmacy (PCI)</option>
-                      <option value="Polytechnic">JMCT Polytechnic College (MSBTE)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Class / Course & Batch</label>
-                    <input
-                      required
-                      type="text"
-                      value={newCourse}
-                      onChange={(e) => setNewCourse(e.target.value)}
-                      placeholder="e.g. Grade 10 - A (CBSE) / B.Pharm Sem-IV"
-                      className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium focus:bg-white focus:border-indigo-500 outline-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700">Mobile No.</label>
-                      <input
-                        required
-                        type="tel"
-                        value={newPhone}
-                        onChange={(e) => setNewPhone(e.target.value)}
-                        placeholder="98230XXXXX"
-                        className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium focus:bg-white focus:border-indigo-500 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-700">Annual Fee (₹)</label>
-                      <input
-                        required
-                        type="number"
-                        value={newFee}
-                        onChange={(e) => setNewFee(e.target.value)}
-                        className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold tabular-nums focus:bg-white focus:border-indigo-500 outline-none"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-xs cursor-pointer transition"
-                  >
-                    Confirm Admission & Generate ID
-                  </button>
-                </form>
-
-                <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                  <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h2 className="font-black text-base text-slate-900">
-                        Student & Fee Register ({filteredStudents.length})
-                      </h2>
-                      <p className="text-xs text-slate-500">
-                        Live records • Filter by fee status, collect online payment, or print receipt
-                      </p>
-                    </div>
-                    <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80 text-xs font-extrabold">
-                      {(
-                        [
-                          ["All", "All"],
-                          ["Due", "Due Only"],
-                          ["Paid", "Paid Full"],
-                        ] as const
-                      ).map(([fKey, fLabel]) => (
-                        <button
-                          key={fKey}
-                          type="button"
-                          onClick={() => setFeeFilter(fKey)}
-                          className={`px-2.5 py-1 rounded-lg cursor-pointer transition ${
-                            feeFilter === fKey
-                              ? "bg-white text-indigo-700 shadow-2xs"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                        >
-                          {fLabel}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50/90 border-b border-slate-200/70 text-[11px] uppercase tracking-wider text-slate-500 font-extrabold">
-                        <tr>
-                          <th className="px-5 py-3">Roll ID</th>
-                          <th className="px-5 py-3">Student</th>
-                          <th className="px-5 py-3">Wing & Course</th>
-                          <th className="px-5 py-3">Fee Status</th>
-                          <th className="px-5 py-3 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {filteredStudents.map((s) => {
-                          const due = Math.max(0, s.totalFee - s.paidFee);
-                          const paidPct =
-                            s.totalFee > 0
-                              ? Math.min(100, Math.round((s.paidFee / s.totalFee) * 100))
-                              : 100;
-                          const attPct =
-                            s.totalDays > 0
-                              ? Math.round((s.presentDays / s.totalDays) * 100)
-                              : 100;
-
-                          return (
-                            <tr key={s.id} className="hover:bg-slate-50/80 transition">
-                              <td className="px-5 py-3.5 font-mono text-xs font-bold text-indigo-600 whitespace-nowrap">
-                                {s.id}
-                              </td>
-                              <td className="px-5 py-3.5">
-                                <p className="font-bold text-slate-900">{s.name}</p>
-                                <p className="text-xs text-slate-500 tabular-nums">
-                                  {s.phone} • Att:{" "}
-                                  <span
-                                    className={`font-bold ${
-                                      attPct < 75 ? "text-rose-600" : "text-emerald-600"
-                                    }`}
-                                  >
-                                    {attPct}%
-                                  </span>
-                                </p>
-                              </td>
-                              <td className="px-5 py-3.5">
-                                <span
-                                  className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                                    s.wing === "School"
-                                      ? "bg-blue-50 text-blue-700"
-                                      : s.wing === "Pharmacy"
-                                      ? "bg-violet-50 text-violet-700"
-                                      : "bg-amber-50 text-amber-800"
-                                  }`}
-                                >
-                                  {s.wing}
-                                </span>
-                                <p className="text-xs font-medium text-slate-600 mt-0.5">
-                                  {s.course}
-                                </p>
-                              </td>
-                              <td className="px-5 py-3.5 min-w-[150px]">
-                                <div className="flex justify-between text-[11px] font-bold tabular-nums mb-1">
-                                  <span className="text-slate-700">
-                                    ₹{s.paidFee.toLocaleString("en-IN")}
-                                  </span>
-                                  <span className="text-slate-400">
-                                    / ₹{s.totalFee.toLocaleString("en-IN")}
-                                  </span>
-                                </div>
-                                <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                                  <div
-                                    className={`h-full rounded-full ${
-                                      due === 0 ? "bg-emerald-500" : "bg-indigo-600"
-                                    }`}
-                                    style={{ width: `${paidPct}%` }}
-                                  />
-                                </div>
-                              </td>
-                              <td className="px-5 py-3.5 whitespace-nowrap text-right">
-                                <div className="inline-flex items-center gap-1.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setStudentPortalId(s.id);
-                                      setStudentLoginRollInput(s.id);
-                                      setStudentUnlocked(true);
-                                      openMode("student");
-                                    }}
-                                    className="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-extrabold cursor-pointer transition"
-                                  >
-                                    Portal
-                                  </button>
-                                  {due > 0 ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => openOnlinePaymentModal(s)}
-                                      className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer transition tabular-nums"
-                                    >
-                                      Pay ₹{due.toLocaleString("en-IN")}
-                                    </button>
-                                  ) : (
-                                    <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
-                                      Paid Full
-                                    </span>
-                                  )}
-                                  <button
-                                    type="button"
-                                    onClick={() => setReceiptStudent(s)}
-                                    className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer transition"
-                                  >
-                                    Receipt
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteStudent(s.id)}
-                                    title="Remove student record"
-                                    className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer transition"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 2. TEACHER DESK */}
-          {roleTab === "teacher" && (
-            <div className="space-y-5">
-              <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                      FACULTY WORKSPACE • ROLL CALL & QUESTION SUBMISSION
-                    </span>
-                    <h2 className="text-lg font-black text-slate-900">
-                      Teacher Roll Call & Question Upload Desk
-                    </h2>
-                  </div>
-                  <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-extrabold">
-                    ● {teacherWing} • {teacherClass} ({teacherAcademicYear})
-                  </span>
+                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
+                    Campus ERP Operations Desk
+                  </h1>
                 </div>
 
-                <div className="grid sm:grid-cols-5 gap-3 items-end">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600">Teacher / Faculty Name</label>
-                    <input
-                      type="text"
-                      value={teacherName}
-                      onChange={(e) => setTeacherName(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600">Select Wing</label>
-                    <select
-                      value={teacherWing}
-                      onChange={(e) => handleWingSwitchForTeacher(e.target.value as Wing)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-extrabold text-indigo-700"
-                    >
-                      <option value="School">School Wing (CBSE Teachers)</option>
-                      <option value="Pharmacy">Pharmacy Wing (PCI Faculty)</option>
-                      <option value="Polytechnic">Polytechnic Wing (MSBTE Faculty)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600">Class / Batch</label>
-                    <select
-                      value={teacherClass}
-                      onChange={(e) => setTeacherClass(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      {WING_COURSES[teacherWing].map((cls) => (
-                        <option key={cls} value={cls}>
-                          {cls}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600">Academic Year</label>
-                    <select
-                      value={teacherAcademicYear}
-                      onChange={(e) => setTeacherAcademicYear(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      {ACADEMIC_YEARS.map((yr) => (
-                        <option key={yr} value={yr}>
-                          {yr}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2 pb-1">
-                    <input
-                      id="onlyClassCheck"
-                      type="checkbox"
-                      checked={onlySelectedClass}
-                      onChange={(e) => setOnlySelectedClass(e.target.checked)}
-                      className="w-4 h-4 accent-indigo-600 cursor-pointer"
-                    />
-                    <label
-                      htmlFor="onlyClassCheck"
-                      className="text-xs font-bold text-slate-700 cursor-pointer"
-                    >
-                      Only Selected Class
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid lg:grid-cols-12 gap-6 items-start">
-                <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                  <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
-                    <div>
-                      <h3 className="font-black text-base text-slate-900">
-                        {teacherWing} Attendance —{" "}
-                        {onlySelectedClass ? teacherClass : "All Classes in Wing"} (
-                        {attendanceStudents.length})
-                      </h3>
-                      <p className="text-xs text-slate-500">
-                        Marking by {teacherName} • Year {teacherAcademicYear}
-                      </p>
-                    </div>
-                    {attendanceStudents.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search ID, name, class, year, subject..."
+                    className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold w-52 focus:bg-white focus:border-indigo-500 outline-none transition"
+                  />
+                  <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
+                    {(["All", "School", "Pharmacy", "Polytechnic"] as const).map((w) => (
                       <button
+                        key={w}
                         type="button"
-                        onClick={markAllClassPresent}
-                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer transition"
+                        onClick={() => setWingFilter(w)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer ${
+                          wingFilter === w
+                            ? "bg-indigo-600 text-white shadow-2xs"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
                       >
-                        ✓ Mark All Present
+                        {w === "All" ? "All Wings (3)" : w}
                       </button>
-                    )}
+                    ))}
                   </div>
-
-                  <div className="divide-y divide-slate-100">
-                    {attendanceStudents.length === 0 ? (
-                      <div className="p-8 text-center text-sm text-slate-500">
-                        No students found for this class selection.{" "}
-                        <button
-                          type="button"
-                          onClick={() => setOnlySelectedClass(false)}
-                          className="text-indigo-600 font-bold underline cursor-pointer"
-                        >
-                          Show all students in {teacherWing} wing
-                        </button>
-                      </div>
-                    ) : (
-                      attendanceStudents.map((s) => {
-                        const pct = Math.round((s.presentDays / s.totalDays) * 100);
-                        return (
-                          <div
-                            key={s.id}
-                            className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
-                          >
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-indigo-600 whitespace-nowrap">
-                                  {s.id}
-                                </span>
-                                <span className="font-extrabold text-slate-900">{s.name}</span>
-                                {pct < 75 && (
-                                  <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-black whitespace-nowrap">
-                                    ⚠ BELOW 75% ({pct}%)
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-slate-500 mt-0.5 tabular-nums">
-                                {s.wing} • {s.course} • Overall: {pct}% ({s.presentDays}/
-                                {s.totalDays} days)
-                              </p>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                disabled={isAttendanceLocked}
-                                onClick={() => markAttendance(s.id, "Present")}
-                                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition disabled:opacity-40 ${
-                                  s.todayStatus === "Present"
-                                    ? "bg-emerald-600 text-white shadow-2xs"
-                                    : "bg-slate-100 text-slate-700 hover:bg-emerald-50"
-                                }`}
-                              >
-                                ✓ Present
-                              </button>
-                              <button
-                                type="button"
-                                disabled={isAttendanceLocked}
-                                onClick={() => markAttendance(s.id, "Absent")}
-                                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition disabled:opacity-40 ${
-                                  s.todayStatus === "Absent"
-                                    ? "bg-rose-600 text-white shadow-2xs"
-                                    : "bg-slate-100 text-slate-700 hover:bg-rose-50"
-                                }`}
-                              >
-                                ✕ Absent
-                              </button>
-                              <button
-                                type="button"
-                                disabled={isAttendanceLocked || s.todayStatus === "Unmarked"}
-                                onClick={() => resetAttendanceToUnmarked(s.id)}
-                                className="px-3 py-2 rounded-xl text-xs font-extrabold border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-40 cursor-pointer transition"
-                              >
-                                Clear
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  {attendanceStudents.length > 0 && (
-                    <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
-                      <div className="text-xs text-slate-600 flex items-center gap-2">
-                        {isAttendanceLocked && (
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
-                            LOCKED ✓
-                          </span>
-                        )}
-                        {attendanceNotice ? (
-                          <span className="font-bold text-emerald-700">{attendanceNotice}</span>
-                        ) : (
-                          <span>Mark roll call and click Submit Attendance.</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {isAttendanceLocked && (
-                          <button
-                            type="button"
-                            onClick={handleUnlockAttendance}
-                            className="px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-extrabold cursor-pointer transition"
-                          >
-                            Unlock / Edit
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          disabled={isSubmittingAttendance || isAttendanceLocked}
-                          onClick={handleSubmitAttendance}
-                          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold disabled:opacity-50 cursor-pointer transition"
-                        >
-                          {isAttendanceLocked
-                            ? "Submitted & Locked"
-                            : isSubmittingAttendance
-                            ? "Submitting..."
-                            : "Submit Attendance"}
-                        </button>
-                      </div>
-                    </div>
+                  {canViewOverallFees && (
+                    <button
+                      type="button"
+                      onClick={exportCsvReport}
+                      className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer whitespace-nowrap"
+                    >
+                      ↓ Export CSV
+                    </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={handleResetDemoData}
+                    title="Reset sample data after testing"
+                    className="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer whitespace-nowrap"
+                  >
+                    Reset Demo
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2.5 print:hidden">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                  {(
+                    [
+                      ["admin", "01 • ADMIN", "Admissions & Fees"],
+                      ["teacher", "02 • TEACHERS", "Attendance & Q-Upload"],
+                      ["peon", "03 • PEON SYSTEM", "Duty & Cleaning"],
+                      ["guard", "04 • SECURITY", "Gate Pass Log"],
+                      ["parent", "05 • PARENTS", "Status & Online Pay"],
+                      ["qbank", "06 • QUESTION BANK", hasCoordinatorPermission ? "Permitted Access" : "Coordinator Only"],
+                    ] as const
+                  ).map(([key, tag, title]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setRoleTab(key)}
+                      className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                        roleTab === key
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                          : "bg-white text-slate-800 border-slate-200/90 hover:border-indigo-300"
+                      }`}
+                    >
+                      <p
+                        className={`text-[10px] font-extrabold tracking-wider ${
+                          roleTab === key ? "text-indigo-100" : "text-slate-400"
+                        }`}
+                      >
+                        {tag}
+                      </p>
+                      <p className="text-xs sm:text-sm font-black mt-0.5">{title}</p>
+                    </button>
+                  ))}
                 </div>
 
-                <div className="lg:col-span-5 space-y-4">
-                  <form
-                    onSubmit={handleTeacherUploadQuestion}
-                    className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4"
-                  >
-                    <div className="border-b border-slate-100 pb-3">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                        UPLOAD TO QUESTION BANK
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {(
+                    [
+                      ["timetable", "TIMETABLE", `${timetableSlots.length} Periods`],
+                      ["homework", "HOMEWORK", `${homeworkList.length} Tasks`],
+                      ["inventory", "INVENTORY", `${inventoryList.length} Items`],
+                      ["hr", "HR & STAFF LOG", `${hrStaffList.length} Staff`],
+                      ["notifications", "NOTIFICATIONS", `${notificationsData.length} Alerts`],
+                    ] as const
+                  ).map(([key, title, sub]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setRoleTab(key)}
+                      className={`px-3.5 py-2.5 rounded-xl border flex items-center justify-between gap-2 transition cursor-pointer ${
+                        roleTab === key
+                          ? "bg-slate-900 text-white border-slate-900 shadow-2xs"
+                          : "bg-white text-slate-800 border-slate-200/90 hover:border-slate-400"
+                      }`}
+                    >
+                      <span className="text-xs font-black tracking-wide">{title}</span>
+                      <span
+                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full tabular-nums ${
+                          roleTab === key
+                            ? "bg-amber-400 text-slate-950"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {sub}
                       </span>
-                      <h3 className="text-lg font-black text-slate-900">
-                        Upload Wing, Class & Year Question
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Teachers upload by wing, class, and year; only permitted Coordinators can
-                        open, edit, and print the Question Bank.
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 1. ADMIN DESK */}
+              {roleTab === "admin" && (
+                <div className="space-y-5">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-indigo-600 shadow-2xs">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                        Total Students
+                      </p>
+                      <p className="text-2xl font-black text-indigo-600 mt-1 tabular-nums">
+                        {students.length}
                       </p>
                     </div>
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-emerald-600 shadow-2xs">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                        Total Fee Collected
+                      </p>
+                      <p className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
+                        ₹{totalCollected.toLocaleString("en-IN")}
+                      </p>
+                    </div>
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-2xs">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                        Pending Dues
+                      </p>
+                      <p className="text-2xl font-black text-rose-600 mt-1 tabular-nums">
+                        ₹{totalPending.toLocaleString("en-IN")}
+                      </p>
+                    </div>
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-t-4 border-t-amber-500 shadow-2xs">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                        Active Gate Passes
+                      </p>
+                      <p className="text-2xl font-black text-amber-600 mt-1 tabular-nums">
+                        {insideGateCount} Inside
+                      </p>
+                    </div>
+                  </div>
 
-                    {uploadNotice && (
-                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-                        ✓ {uploadNotice}
+                  <div className="grid lg:grid-cols-12 gap-6 items-start">
+                    <form
+                      onSubmit={handleAddStudent}
+                      className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4"
+                    >
+                      <div className="border-b border-slate-100 pb-3">
+                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                          ADMISSIONS COUNTER
+                        </p>
+                        <h2 className="text-lg font-black text-slate-900">+ New Student Admission</h2>
                       </div>
-                    )}
 
-                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-bold text-slate-700">Wing</label>
+                        <label className="text-xs font-bold text-slate-700">Student Full Name</label>
+                        <input
+                          required
+                          type="text"
+                          value={newName}
+                          onChange={(e) => setNewName(e.target.value)}
+                          placeholder="e.g. Pranav Deshpande"
+                          className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium focus:bg-white focus:border-indigo-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Select Wing</label>
                         <select
-                          value={uploadWing}
-                          onChange={(e) => handleUploadWingChange(e.target.value as Wing)}
-                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                          value={newWing}
+                          onChange={(e) => setNewWing(e.target.value as Wing)}
+                          className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-800 focus:bg-white focus:border-indigo-500 outline-none"
                         >
-                          <option value="School">School (CBSE)</option>
-                          <option value="Pharmacy">Pharmacy (PCI)</option>
-                          <option value="Polytechnic">Polytechnic (MSBTE)</option>
+                          <option value="School">JMCT International School (CBSE)</option>
+                          <option value="Pharmacy">JMCT College of Pharmacy (PCI)</option>
+                          <option value="Polytechnic">JMCT Polytechnic College (MSBTE)</option>
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-700">Academic Year</label>
+                        <label className="text-xs font-bold text-slate-700">Class / Course & Batch</label>
+                        <input
+                          required
+                          type="text"
+                          value={newCourse}
+                          onChange={(e) => setNewCourse(e.target.value)}
+                          placeholder="e.g. Grade 10 - A (CBSE) / B.Pharm Sem-IV"
+                          className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium focus:bg-white focus:border-indigo-500 outline-none"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">Mobile No.</label>
+                          <input
+                            required
+                            type="tel"
+                            value={newPhone}
+                            onChange={(e) => setNewPhone(e.target.value)}
+                            placeholder="98230XXXXX"
+                            className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium focus:bg-white focus:border-indigo-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">Annual Fee (₹)</label>
+                          <input
+                            required
+                            type="number"
+                            value={newFee}
+                            onChange={(e) => setNewFee(e.target.value)}
+                            className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold tabular-nums focus:bg-white focus:border-indigo-500 outline-none"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-xs cursor-pointer transition"
+                      >
+                        Confirm Admission & Generate ID
+                      </button>
+                    </form>
+
+                    <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                      <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <h2 className="font-black text-base text-slate-900">
+                            Student & Fee Register ({filteredStudents.length})
+                          </h2>
+                          <p className="text-xs text-slate-500">
+                            Admin ledger • Collect online payment, open ID card, or print receipt
+                          </p>
+                        </div>
+                        <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80 text-xs font-extrabold">
+                          {(
+                            [
+                              ["All", "All"],
+                              ["Due", "Due Only"],
+                              ["Paid", "Paid Full"],
+                            ] as const
+                          ).map(([fKey, fLabel]) => (
+                            <button
+                              key={fKey}
+                              type="button"
+                              onClick={() => setFeeFilter(fKey)}
+                              className={`px-2.5 py-1 rounded-lg cursor-pointer transition ${
+                                feeFilter === fKey
+                                  ? "bg-white text-indigo-700 shadow-2xs"
+                                  : "text-slate-600 hover:text-slate-900"
+                              }`}
+                            >
+                              {fLabel}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                          <thead className="bg-slate-50/90 border-b border-slate-200/70 text-[11px] uppercase tracking-wider text-slate-500 font-extrabold">
+                            <tr>
+                              <th className="px-5 py-3">Roll ID</th>
+                              <th className="px-5 py-3">Student</th>
+                              <th className="px-5 py-3">Wing & Course</th>
+                              <th className="px-5 py-3">Fee Status</th>
+                              <th className="px-5 py-3 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {filteredStudents.map((s) => {
+                              const due = Math.max(0, s.totalFee - s.paidFee);
+                              const paidPct =
+                                s.totalFee > 0
+                                  ? Math.min(100, Math.round((s.paidFee / s.totalFee) * 100))
+                                  : 100;
+                              const attPct =
+                                s.totalDays > 0
+                                  ? Math.round((s.presentDays / s.totalDays) * 100)
+                                  : 100;
+
+                              return (
+                                <tr key={s.id} className="hover:bg-slate-50/80 transition">
+                                  <td className="px-5 py-3.5 font-mono text-xs font-bold text-indigo-600 whitespace-nowrap">
+                                    {s.id}
+                                  </td>
+                                  <td className="px-5 py-3.5">
+                                    <p className="font-bold text-slate-900">{s.name}</p>
+                                    <p className="text-xs text-slate-500 tabular-nums">
+                                      {s.phone} • Att:{" "}
+                                      <span
+                                        className={`font-bold ${
+                                          attPct < 75 ? "text-rose-600" : "text-emerald-600"
+                                        }`}
+                                      >
+                                        {attPct}%
+                                      </span>
+                                    </p>
+                                  </td>
+                                  <td className="px-5 py-3.5">
+                                    <span
+                                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+                                        s.wing === "School"
+                                          ? "bg-blue-50 text-blue-700"
+                                          : s.wing === "Pharmacy"
+                                          ? "bg-violet-50 text-violet-700"
+                                          : "bg-amber-50 text-amber-800"
+                                      }`}
+                                    >
+                                      {s.wing}
+                                    </span>
+                                    <p className="text-xs font-medium text-slate-600 mt-0.5">
+                                      {s.course}
+                                    </p>
+                                  </td>
+                                  <td className="px-5 py-3.5 min-w-[150px]">
+                                    <div className="flex justify-between text-[11px] font-bold tabular-nums mb-1">
+                                      <span className="text-slate-700">
+                                        ₹{s.paidFee.toLocaleString("en-IN")}
+                                      </span>
+                                      <span className="text-slate-400">
+                                        / ₹{s.totalFee.toLocaleString("en-IN")}
+                                      </span>
+                                    </div>
+                                    <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full ${
+                                          due === 0 ? "bg-emerald-500" : "bg-indigo-600"
+                                        }`}
+                                        style={{ width: `${paidPct}%` }}
+                                      />
+                                    </div>
+                                  </td>
+                                  <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                                    <div className="inline-flex items-center gap-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setSelectedIdCardStudentId(s.id);
+                                          openMode("idcards", undefined, s.wing);
+                                        }}
+                                        className="px-2.5 py-1.5 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-800 text-xs font-extrabold cursor-pointer transition"
+                                      >
+                                        ID
+                                      </button>
+                                      {due > 0 ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => openOnlinePaymentModal(s)}
+                                          className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer transition tabular-nums"
+                                        >
+                                          Pay ₹{due.toLocaleString("en-IN")}
+                                        </button>
+                                      ) : (
+                                        <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                                          Paid Full
+                                        </span>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => setReceiptStudent(s)}
+                                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer transition"
+                                      >
+                                        Receipt
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteStudent(s.id)}
+                                        title="Remove student record"
+                                        className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer transition"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2. TEACHER DESK */}
+              {roleTab === "teacher" && (
+                <div className="space-y-5">
+                  <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                          TEACHER LOGIN WORKSPACE • ROLL CALL & QUESTION SUBMISSION
+                        </span>
+                        <h2 className="text-lg font-black text-slate-900">
+                          Teacher Roll Call & Question Upload Desk
+                        </h2>
+                      </div>
+                      <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-extrabold">
+                        ● {teacherWing} • {teacherClass} ({teacherAcademicYear})
+                      </span>
+                    </div>
+
+                    <div className="grid sm:grid-cols-5 gap-3 items-end">
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600">Teacher Name</label>
+                        <input
+                          type="text"
+                          value={teacherName}
+                          onChange={(e) => setTeacherName(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600">Select Wing</label>
                         <select
-                          value={uploadYear}
-                          onChange={(e) => setUploadYear(e.target.value)}
+                          value={teacherWing}
+                          onChange={(e) => handleWingSwitchForTeacher(e.target.value as Wing)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-extrabold text-indigo-700"
+                        >
+                          <option value="School">School Wing (CBSE Teachers)</option>
+                          <option value="Pharmacy">Pharmacy Wing (PCI Faculty)</option>
+                          <option value="Polytechnic">Polytechnic Wing (MSBTE Faculty)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600">Class / Batch</label>
+                        <select
+                          value={teacherClass}
+                          onChange={(e) => setTeacherClass(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          {WING_COURSES[teacherWing].map((cls) => (
+                            <option key={cls} value={cls}>
+                              {cls}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600">Academic Year</label>
+                        <select
+                          value={teacherAcademicYear}
+                          onChange={(e) => setTeacherAcademicYear(e.target.value)}
                           className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
                         >
                           {ACADEMIC_YEARS.map((yr) => (
@@ -4023,18 +4186,1203 @@ export default function JMCTCampusERP() {
                           ))}
                         </select>
                       </div>
+                      <div className="flex items-center gap-2 pb-1">
+                        <input
+                          id="onlyClassCheck"
+                          type="checkbox"
+                          checked={onlySelectedClass}
+                          onChange={(e) => setOnlySelectedClass(e.target.checked)}
+                          className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                        />
+                        <label
+                          htmlFor="onlyClassCheck"
+                          className="text-xs font-bold text-slate-700 cursor-pointer"
+                        >
+                          Only Selected Class
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid lg:grid-cols-12 gap-6 items-start">
+                    <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                      <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
+                        <div>
+                          <h3 className="font-black text-base text-slate-900">
+                            {teacherWing} Attendance —{" "}
+                            {onlySelectedClass ? teacherClass : "All Classes in Wing"} (
+                            {attendanceStudents.length})
+                          </h3>
+                          <p className="text-xs text-slate-500">
+                            Marking by {teacherName} • Year {teacherAcademicYear}
+                          </p>
+                        </div>
+                        {attendanceStudents.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={markAllClassPresent}
+                            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer transition"
+                          >
+                            ✓ Mark All Present
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="divide-y divide-slate-100">
+                        {attendanceStudents.length === 0 ? (
+                          <div className="p-8 text-center text-sm text-slate-500">
+                            No students found for this class selection.{" "}
+                            <button
+                              type="button"
+                              onClick={() => setOnlySelectedClass(false)}
+                              className="text-indigo-600 font-bold underline cursor-pointer"
+                            >
+                              Show all students in {teacherWing} wing
+                            </button>
+                          </div>
+                        ) : (
+                          attendanceStudents.map((s) => {
+                            const pct = Math.round((s.presentDays / s.totalDays) * 100);
+                            return (
+                              <div
+                                key={s.id}
+                                className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
+                              >
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-mono text-xs font-bold text-indigo-600 whitespace-nowrap">
+                                      {s.id}
+                                    </span>
+                                    <span className="font-extrabold text-slate-900">{s.name}</span>
+                                    {pct < 75 && (
+                                      <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-black whitespace-nowrap">
+                                        ⚠ BELOW 75% ({pct}%)
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-slate-500 mt-0.5 tabular-nums">
+                                    {s.wing} • {s.course} • Overall: {pct}% ({s.presentDays}/
+                                    {s.totalDays} days)
+                                  </p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    disabled={isAttendanceLocked}
+                                    onClick={() => markAttendance(s.id, "Present")}
+                                    className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition disabled:opacity-40 ${
+                                      s.todayStatus === "Present"
+                                        ? "bg-emerald-600 text-white shadow-2xs"
+                                        : "bg-slate-100 text-slate-700 hover:bg-emerald-50"
+                                    }`}
+                                  >
+                                    ✓ Present
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={isAttendanceLocked}
+                                    onClick={() => markAttendance(s.id, "Absent")}
+                                    className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition disabled:opacity-40 ${
+                                      s.todayStatus === "Absent"
+                                        ? "bg-rose-600 text-white shadow-2xs"
+                                        : "bg-slate-100 text-slate-700 hover:bg-rose-50"
+                                    }`}
+                                  >
+                                    ✕ Absent
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={isAttendanceLocked || s.todayStatus === "Unmarked"}
+                                    onClick={() => resetAttendanceToUnmarked(s.id)}
+                                    className="px-3 py-2 rounded-xl text-xs font-extrabold border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-40 cursor-pointer transition"
+                                  >
+                                    Clear
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {attendanceStudents.length > 0 && (
+                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                          <div className="text-xs text-slate-600 flex items-center gap-2">
+                            {isAttendanceLocked && (
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                                LOCKED ✓
+                              </span>
+                            )}
+                            {attendanceNotice ? (
+                              <span className="font-bold text-emerald-700">{attendanceNotice}</span>
+                            ) : (
+                              <span>Mark roll call and click Submit Attendance.</span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {isAttendanceLocked && (
+                              <button
+                                type="button"
+                                onClick={handleUnlockAttendance}
+                                className="px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-extrabold cursor-pointer transition"
+                              >
+                                Unlock / Edit
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              disabled={isSubmittingAttendance || isAttendanceLocked}
+                              onClick={handleSubmitAttendance}
+                              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold disabled:opacity-50 cursor-pointer transition"
+                            >
+                              {isAttendanceLocked
+                                ? "Submitted & Locked"
+                                : isSubmittingAttendance
+                                ? "Submitting..."
+                                : "Submit Attendance"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="lg:col-span-5 space-y-4">
+                      <form
+                        onSubmit={handleTeacherUploadQuestion}
+                        className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4"
+                      >
+                        <div className="border-b border-slate-100 pb-3">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                            UPLOAD TO QUESTION BANK
+                          </span>
+                          <h3 className="text-lg font-black text-slate-900">
+                            Upload Wing, Class & Year Question
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Teachers upload by wing, class, and year; only permitted Coordinators can
+                            open, edit, and print the Question Bank.
+                          </p>
+                        </div>
+
+                        {uploadNotice && (
+                          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                            ✓ {uploadNotice}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-slate-700">Wing</label>
+                            <select
+                              value={uploadWing}
+                              onChange={(e) => handleUploadWingChange(e.target.value as Wing)}
+                              className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                            >
+                              <option value="School">School (CBSE)</option>
+                              <option value="Pharmacy">Pharmacy (PCI)</option>
+                              <option value="Polytechnic">Polytechnic (MSBTE)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-slate-700">Academic Year</label>
+                            <select
+                              value={uploadYear}
+                              onChange={(e) => setUploadYear(e.target.value)}
+                              className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                            >
+                              {ACADEMIC_YEARS.map((yr) => (
+                                <option key={yr} value={yr}>
+                                  {yr}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">Class / Course</label>
+                          <select
+                            value={uploadClass}
+                            onChange={(e) => setUploadClass(e.target.value)}
+                            className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                          >
+                            {WING_COURSES[uploadWing].map((cls) => (
+                              <option key={cls} value={cls}>
+                                {cls}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-slate-700">Subject</label>
+                            <input
+                              required
+                              type="text"
+                              value={uploadSubject}
+                              onChange={(e) => setUploadSubject(e.target.value)}
+                              placeholder="e.g. Pharmaceutics"
+                              className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-slate-700">Marks</label>
+                            <input
+                              required
+                              type="number"
+                              value={uploadMarks}
+                              onChange={(e) => setUploadMarks(e.target.value)}
+                              className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">Unit / Topic</label>
+                          <input
+                            type="text"
+                            value={uploadUnit}
+                            onChange={(e) => setUploadUnit(e.target.value)}
+                            placeholder="e.g. Unit 3 - Dosage Forms"
+                            className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">Question Statement</label>
+                          <textarea
+                            required
+                            rows={3}
+                            value={uploadQuestionText}
+                            onChange={(e) => setUploadQuestionText(e.target.value)}
+                            placeholder="Enter question for unit test / sessional / semester exam..."
+                            className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
+                        >
+                          Upload Question to Question Bank
+                        </button>
+                      </form>
+
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">
+                            Your Submitted Questions ({teacherUploadedQuestions.length})
+                          </h4>
+                          <span className="text-[10px] font-bold text-slate-400">
+                            By {teacherName}
+                          </span>
+                        </div>
+                        {teacherUploadedQuestions.length === 0 ? (
+                          <p className="text-xs text-slate-500">
+                            No questions uploaded under &ldquo;{teacherName}&rdquo; yet.
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {teacherUploadedQuestions.map((tq) => (
+                              <div
+                                key={tq.id}
+                                className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs flex items-center justify-between gap-2"
+                              >
+                                <div className="truncate">
+                                  <p className="font-bold text-slate-800 truncate">
+                                    {tq.wing} • {tq.className} ({tq.academicYear})
+                                  </p>
+                                  <p className="text-[11px] text-slate-500 truncate">
+                                    {tq.subject} • {tq.marks} Marks
+                                  </p>
+                                </div>
+                                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-extrabold shrink-0">
+                                  ✓ Sent to Bank
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 3. SYSTEM-WISE PEON / SUPPORT STAFF MODULE */}
+              {roleTab === "peon" && (
+                <div className="space-y-5">
+                  <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                          PEON LOGIN WORKSPACE • HOUSEKEEPING, LAB & BELL OPERATIONS
+                        </span>
+                        <h2 className="text-lg font-black text-slate-900">
+                          Peon & Support Staff Duty System
+                        </h2>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-extrabold tabular-nums">
+                        <span className="px-3 py-1 rounded-lg bg-slate-100 text-slate-800">
+                          Total: {visiblePeonTasks.length}
+                        </span>
+                        <span className="px-3 py-1 rounded-lg bg-amber-100 text-amber-900">
+                          Pending: {visiblePeonTasks.length - completedPeonCount}
+                        </span>
+                        <span className="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800">
+                          Done: {completedPeonCount}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid lg:grid-cols-12 gap-6 items-start">
+                    <form
+                      onSubmit={handleAddPeonTask}
+                      className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
+                    >
+                      <h3 className="text-base font-black text-slate-900">+ Dispatch New Duty Slip</h3>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Support Staff Name</label>
+                        <input
+                          required
+                          type="text"
+                          value={peonStaff}
+                          onChange={(e) => setPeonStaff(e.target.value)}
+                          className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">Wing</label>
+                          <select
+                            value={peonWing}
+                            onChange={(e) => setPeonWing(e.target.value as Wing)}
+                            className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                          >
+                            <option value="School">School</option>
+                            <option value="Pharmacy">Pharmacy</option>
+                            <option value="Polytechnic">Polytechnic</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">Shift</label>
+                          <select
+                            value={peonShift}
+                            onChange={(e) => setPeonShift(e.target.value)}
+                            className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                          >
+                            <option value="Shift A • 07:30 AM – 03:30 PM">Shift A (Morning)</option>
+                            <option value="Shift B • 11:00 AM – 07:00 PM">Shift B (Day/Eve)</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Building / Lab Zone</label>
+                        <input
+                          type="text"
+                          value={peonZone}
+                          onChange={(e) => setPeonZone(e.target.value)}
+                          placeholder="e.g. Lab 2 / Ground Floor Corridor"
+                          className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Duty Instructions</label>
+                        <input
+                          required
+                          type="text"
+                          value={peonTaskText}
+                          onChange={(e) => setPeonTaskText(e.target.value)}
+                          placeholder="e.g. Water Cooler Refill & Bell Duty"
+                          className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
+                      >
+                        Assign Duty to Roster
+                      </button>
+                    </form>
+
+                    <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <h3 className="font-black text-base text-slate-900">
+                          Duty Roster & Completion Queue ({visiblePeonTasks.length})
+                        </h3>
+                        <span className="text-xs font-semibold text-slate-500">
+                          Wing: {wingFilter} • Saved Locally
+                        </span>
+                      </div>
+                      <div className="divide-y divide-slate-100">
+                        {visiblePeonTasks.map((t) => (
+                          <div
+                            key={t.id}
+                            className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-mono text-xs font-bold text-indigo-600">
+                                  {t.id}
+                                </span>
+                                <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
+                                  {t.wing}
+                                </span>
+                                <span className="text-xs font-bold text-slate-700">{t.zone}</span>
+                              </div>
+                              <p className="font-extrabold text-slate-900 text-sm">{t.locationTask}</p>
+                              <p className="text-xs text-slate-500">
+                                Assigned to: <strong>{t.staffName}</strong> • {t.shift}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPeonTasks((prev) =>
+                                  prev.map((item) =>
+                                    item.id === t.id ? { ...item, done: !item.done } : item
+                                  )
+                                )
+                              }
+                              className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                                t.done
+                                  ? "bg-emerald-600 text-white shadow-2xs"
+                                  : "bg-amber-100 text-amber-900 hover:bg-amber-200"
+                              }`}
+                            >
+                              {t.done ? "✓ Completed" : "Mark Completed"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. SECURITY GUARD DESK */}
+              {roleTab === "guard" && (
+                <div className="grid lg:grid-cols-12 gap-6 items-start">
+                  <form
+                    onSubmit={handleAddGatePass}
+                    className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4"
+                  >
+                    <h2 className="text-lg font-black text-slate-900">+ Campus Gate Pass Entry</h2>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">On-Duty Security Guard</label>
+                      <input
+                        type="text"
+                        value={guardName}
+                        onChange={(e) => setGuardName(e.target.value)}
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Visitor / Student Name</label>
+                      <input
+                        required
+                        type="text"
+                        value={visitorName}
+                        onChange={(e) => setVisitorName(e.target.value)}
+                        placeholder="e.g. Mr. Anil Kulkarni"
+                        className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Category</label>
+                        <select
+                          value={visitorRole}
+                          onChange={(e) => setVisitorRole(e.target.value as GatePass["roleType"])}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="Parent">Parent</option>
+                          <option value="Student">Student</option>
+                          <option value="Vendor">Vendor</option>
+                          <option value="Visitor">Visitor</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Wing</label>
+                        <select
+                          value={visitorWing}
+                          onChange={(e) => setVisitorWing(e.target.value as Wing)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="School">School</option>
+                          <option value="Pharmacy">Pharmacy</option>
+                          <option value="Polytechnic">Polytechnic</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Purpose of Visit</label>
+                      <input
+                        type="text"
+                        value={visitorPurpose}
+                        onChange={(e) => setVisitorPurpose(e.target.value)}
+                        placeholder="e.g. Accounts Office / Lab Pass"
+                        className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
+                    >
+                      Log Gate Entry
+                    </button>
+                  </form>
+
+                  <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                      <h2 className="font-black text-base text-slate-900">
+                        Gate Pass & Visitor Log ({gatePasses.length})
+                      </h2>
+                      <span className="text-xs text-slate-500 font-semibold">{guardName}</span>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {gatePasses.map((g) => (
+                        <div
+                          key={g.id}
+                          className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
+                        >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-indigo-600">{g.id}</span>
+                              <span className="font-extrabold text-slate-900">{g.visitorName}</span>
+                              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
+                                {g.roleType} • {g.wing}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              {g.purpose} • Time: {g.time}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setGatePasses((prev) =>
+                                prev.map((item) =>
+                                  item.id === g.id
+                                    ? {
+                                        ...item,
+                                        status: item.status === "Inside" ? "Exited" : "Inside",
+                                      }
+                                    : item
+                                )
+                              )
+                            }
+                            className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer ${
+                              g.status === "Inside"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-slate-200 text-slate-700"
+                            }`}
+                          >
+                            {g.status === "Inside" ? "● Inside (Mark Exit)" : "Exited (Mark In)"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 5. PARENTS DESK & ONLINE PAYMENT */}
+              {roleTab === "parent" && (
+                <div className="space-y-5">
+                  <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                      <div>
+                        <span className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-600">
+                          PARENT SELF-SERVICE DESK
+                        </span>
+                        <h2 className="text-2xl font-black text-slate-900">
+                          Ward Attendance, Fee Balance & Online Payment
+                        </h2>
+                      </div>
+                      <input
+                        type="text"
+                        value={parentLookupId}
+                        onChange={(e) => setParentLookupId(e.target.value)}
+                        placeholder="Enter Student ID (e.g. JMCT-PH-204)"
+                        className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
+                      />
+                    </div>
+
+                    {parentStudent ? (
+                      <div className="grid sm:grid-cols-4 gap-5 items-center">
+                        <div>
+                          <p className="text-[10px] font-extrabold uppercase text-slate-400">
+                            STUDENT PROFILE
+                          </p>
+                          <p className="text-lg font-black text-slate-900 mt-0.5">{parentStudent.name}</p>
+                          <p className="text-xs font-semibold text-indigo-600">
+                            {parentStudent.wing} • {parentStudent.course}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-extrabold uppercase text-slate-400">
+                            ATTENDANCE
+                          </p>
+                          <p className="text-2xl font-black text-emerald-600 mt-0.5 tabular-nums">
+                            {Math.round((parentStudent.presentDays / parentStudent.totalDays) * 100)}%
+                          </p>
+                          <p className="text-xs text-slate-500 tabular-nums">
+                            {parentStudent.presentDays}/{parentStudent.totalDays} Days • Today:{" "}
+                            {parentStudent.todayStatus}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-extrabold uppercase text-slate-400">
+                            FEE BALANCE
+                          </p>
+                          <p className="text-2xl font-black text-rose-600 mt-0.5 tabular-nums">
+                            ₹{(parentStudent.totalFee - parentStudent.paidFee).toLocaleString("en-IN")}
+                          </p>
+                          <p className="text-xs text-slate-500 tabular-nums">
+                            Paid: ₹{parentStudent.paidFee.toLocaleString("en-IN")} / ₹
+                            {parentStudent.totalFee.toLocaleString("en-IN")}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {parentStudent.totalFee - parentStudent.paidFee > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => openOnlinePaymentModal(parentStudent)}
+                              className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black cursor-pointer"
+                            >
+                              Pay Fee Online
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setReceiptStudent(parentStudent)}
+                            className="px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-bold cursor-pointer"
+                          >
+                            Receipt
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500">
+                        Try a valid Student ID such as <strong>JMCT-SC-101</strong>,{" "}
+                        <strong>JMCT-PH-204</strong>, or <strong>JMCT-PO-309</strong>.
+                      </p>
+                    )}
+                  </div>
+
+                  {parentStudent && (
+                    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                      <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <h3 className="font-black text-base text-slate-900">
+                          Fee Payment History — {parentStudent.name} ({parentPayments.length})
+                        </h3>
+                        <span className="text-xs text-slate-500 font-mono">{parentStudent.id}</span>
+                      </div>
+                      <div className="divide-y divide-slate-100">
+                        {parentPayments.length === 0 ? (
+                          <p className="p-6 text-xs text-slate-500">
+                            No recorded online transactions yet for this student ID.
+                          </p>
+                        ) : (
+                          parentPayments.map((p) => (
+                            <div
+                              key={p.txnId}
+                              className="px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs"
+                            >
+                              <div>
+                                <p className="font-mono font-bold text-indigo-700">{p.txnId}</p>
+                                <p className="text-slate-600 mt-0.5">
+                                  Mode: <strong>{p.method}</strong>
+                                  {p.upiId ? ` (${p.upiId})` : ""} • {p.paidAt}
+                                </p>
+                              </div>
+                              <span className="font-black text-emerald-700 text-sm tabular-nums">
+                                + ₹{p.amount.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 6. QUESTION BANK */}
+              {roleTab === "qbank" && (
+                <>
+                  {!hasCoordinatorPermission ? (
+                    <div className="bg-white rounded-2xl p-8 border border-slate-200/90 shadow-2xs max-w-lg mx-auto space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-rose-600">
+                          QUESTION BANK • COORDINATOR PERMISSION REQUIRED
+                        </span>
+                        <h2 className="text-xl font-black text-slate-900">
+                          Question Bank Access Restricted to Coordinators
+                        </h2>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          Only permitted Coordinators can open, edit, and print the{" "}
+                          <strong>Question Bank</strong>.
+                        </p>
+                      </div>
+
+                      {coordAuthError && (
+                        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
+                          ⚠ {coordAuthError}
+                        </div>
+                      )}
+
+                      <form onSubmit={handleVerifyCoordinatorPermission} className="space-y-3">
+                        <div>
+                          <label className="text-xs font-bold text-slate-700">
+                            Coordinator Permission Code
+                          </label>
+                          <input
+                            required
+                            type="password"
+                            value={coordPasscodeInput}
+                            onChange={(e) => setCoordPasscodeInput(e.target.value)}
+                            placeholder="Enter Coordinator Passcode"
+                            className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
+                        >
+                          Verify Coordinator Permission →
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden space-y-4">
+                      <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3 print:hidden">
+                        <div>
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                            QUESTION BANK • COORDINATOR PERMISSION GRANTED • EDIT & PRINT
+                          </span>
+                          <h2 className="font-black text-lg text-slate-900">
+                            Question Bank ({visibleQuestions.length} Questions •{" "}
+                            {selectedPaperQuestions.length} Selected / {totalPaperMarks} Marks)
+                          </h2>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <select
+                            value={qClassFilter}
+                            onChange={(e) => setQClassFilter(e.target.value)}
+                            className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                          >
+                            <option value="All">All Classes</option>
+                            {availableQuestionClasses.map((cls) => (
+                              <option key={cls} value={cls}>
+                                {cls}
+                              </option>
+                            ))}
+                          </select>
+
+                          <select
+                            value={qYearFilter}
+                            onChange={(e) => setQYearFilter(e.target.value)}
+                            className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                          >
+                            <option value="All">All Years</option>
+                            {ACADEMIC_YEARS.map((yr) => (
+                              <option key={yr} value={yr}>
+                                Year {yr}
+                              </option>
+                            ))}
+                          </select>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowPaperPreview((v) => !v)}
+                            className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-extrabold cursor-pointer"
+                          >
+                            {showPaperPreview ? "Back to Edit List" : "Preview & Edit Paper"}
+                          </button>
+
+                          {showPaperPreview && (
+                            <button
+                              type="button"
+                              onClick={() => window.print()}
+                              className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold cursor-pointer"
+                            >
+                              Print / Save PDF
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHasCoordinatorPermission(false);
+                              setShowPaperPreview(false);
+                              setEditingQuestion(null);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                          >
+                            Lock
+                          </button>
+                        </div>
+                      </div>
+
+                      {showPaperPreview ? (
+                        <div className="p-6 space-y-5 bg-slate-50/60 print:bg-white print:p-2">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200 grid sm:grid-cols-3 gap-3 print:hidden">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-600">
+                                Exam / Paper Title
+                              </label>
+                              <input
+                                type="text"
+                                value={paperTitle}
+                                onChange={(e) => setPaperTitle(e.target.value)}
+                                className="w-full mt-1 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-600">
+                                Time Duration
+                              </label>
+                              <input
+                                type="text"
+                                value={paperDuration}
+                                onChange={(e) => setPaperDuration(e.target.value)}
+                                className="w-full mt-1 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-600">
+                                Paper Instructions
+                              </label>
+                              <input
+                                type="text"
+                                value={paperInstructions}
+                                onChange={(e) => setPaperInstructions(e.target.value)}
+                                className="w-full mt-1 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="bg-white p-6 rounded-2xl border border-slate-300 space-y-4 print:border-none print:p-0">
+                            <div className="border-b-2 border-slate-800 pb-3 text-center space-y-1">
+                              <p className="text-xs font-black uppercase tracking-wider text-slate-700">
+                                JMCT GROUP OF INSTITUTIONS, NASHIK
+                              </p>
+                              <h3 className="text-lg font-black text-slate-900">{paperTitle}</h3>
+                              <p className="text-xs font-bold text-slate-600">
+                                Wing: {wingFilter} • Class: {qClassFilter} • Academic Year:{" "}
+                                {qYearFilter}
+                              </p>
+                              <div className="flex justify-between text-xs font-extrabold text-slate-800 pt-2">
+                                <span>Time: {paperDuration}</span>
+                                <span>Max Marks: {totalPaperMarks}</span>
+                              </div>
+                              <p className="text-[11px] italic text-slate-600 text-left pt-1">
+                                Note: {paperInstructions}
+                              </p>
+                            </div>
+
+                            {selectedPaperQuestions.length === 0 ? (
+                              <p className="text-sm text-slate-500 text-center py-6">
+                                No questions selected for this paper.
+                              </p>
+                            ) : (
+                              <ol className="list-decimal pl-5 space-y-4 text-sm">
+                                {selectedPaperQuestions.map((q) => (
+                                  <li key={q.id} className="font-semibold text-slate-900">
+                                    <div className="flex justify-between gap-4">
+                                      <span>{q.questionText}</span>
+                                      <span className="font-black text-slate-900 whitespace-nowrap">
+                                        [{q.marks} Marks]
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-500 font-normal print:hidden">
+                                      {q.wing} • {q.className} • Year {q.academicYear} • {q.subject} (
+                                      {q.unit}) • Uploaded by {q.uploadedBy}
+                                    </p>
+                                  </li>
+                                ))}
+                              </ol>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-slate-100">
+                          {visibleQuestions.map((q) => {
+                            const isIncluded = q.includedInPaper !== false;
+                            return (
+                              <div
+                                key={q.id}
+                                className={`px-6 py-4 space-y-2 transition ${
+                                  isIncluded ? "hover:bg-slate-50/70" : "bg-slate-50/60 opacity-75"
+                                }`}
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <label className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-700 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={isIncluded}
+                                        onChange={() => handleToggleIncludeInPaper(q.id)}
+                                        className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                                      />
+                                      <span>Include in Paper</span>
+                                    </label>
+                                    <span className="text-xs font-extrabold text-indigo-700">
+                                      • {q.id} • {q.wing} • {q.className} • Year {q.academicYear} •{" "}
+                                      {q.subject} ({q.unit})
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-black">
+                                      {q.marks} Marks
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingQuestion({ ...q })}
+                                      className="px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteQuestion(q.id)}
+                                      className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                                <p className="text-sm font-semibold text-slate-800">
+                                  {q.questionText}
+                                </p>
+                                <p className="text-[11px] text-slate-500">
+                                  Uploaded by: <strong>{q.uploadedBy}</strong>
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* 7. TIMETABLE DESK */}
+              {roleTab === "timetable" && (
+                <div className="grid lg:grid-cols-12 gap-6 items-start">
+                  <form
+                    onSubmit={handleAddTimetableSlot}
+                    className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
+                  >
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                      PERIOD & LAB ROSTER
+                    </span>
+                    <h2 className="text-lg font-black text-slate-900">+ Add Timetable Slot</h2>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Wing</label>
+                        <select
+                          value={ttWing}
+                          onChange={(e) => {
+                            const w = e.target.value as Wing;
+                            setTtWing(w);
+                            setTtClass(WING_COURSES[w][0]);
+                          }}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="School">School</option>
+                          <option value="Pharmacy">Pharmacy</option>
+                          <option value="Polytechnic">Polytechnic</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Day</label>
+                        <select
+                          value={ttDay}
+                          onChange={(e) => setTtDay(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          {DAYS_OF_WEEK.map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div>
                       <label className="text-xs font-bold text-slate-700">Class / Course</label>
                       <select
-                        value={uploadClass}
-                        onChange={(e) => setUploadClass(e.target.value)}
+                        value={ttClass}
+                        onChange={(e) => setTtClass(e.target.value)}
                         className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
                       >
-                        {WING_COURSES[uploadWing].map((cls) => (
-                          <option key={cls} value={cls}>
-                            {cls}
+                        {WING_COURSES[ttWing].map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Time Slot</label>
+                        <input
+                          required
+                          type="text"
+                          value={ttTiming}
+                          onChange={(e) => setTtTiming(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Room / Lab</label>
+                        <input
+                          type="text"
+                          value={ttRoom}
+                          onChange={(e) => setTtRoom(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Subject / Lab Name</label>
+                      <input
+                        required
+                        type="text"
+                        value={ttSubject}
+                        onChange={(e) => setTtSubject(e.target.value)}
+                        placeholder="e.g. Organic Chemistry / Physics"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Faculty Name</label>
+                      <input
+                        type="text"
+                        value={ttFaculty}
+                        onChange={(e) => setTtFaculty(e.target.value)}
+                        placeholder="e.g. Prof. Rajesh Deshmukh"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
+                    >
+                      Add Period to Timetable
+                    </button>
+                  </form>
+
+                  <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                      <h2 className="font-black text-base text-slate-900">
+                        Class & Lab Timetable ({visibleTimetable.length} Slots)
+                      </h2>
+                      <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {visibleTimetable.map((slot) => (
+                        <div
+                          key={slot.id}
+                          className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
+                                {slot.wing} • {slot.day}
+                              </span>
+                              <span className="text-xs font-bold text-slate-800">{slot.timing}</span>
+                              <span className="text-xs font-semibold text-slate-500">
+                                • {slot.roomOrLab}
+                              </span>
+                            </div>
+                            <p className="font-extrabold text-slate-900 text-sm">{slot.subject}</p>
+                            <p className="text-xs text-slate-500">
+                              {slot.className} • Faculty: <strong>{slot.faculty}</strong>
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setTimetableSlots((prev) => prev.filter((item) => item.id !== slot.id))
+                            }
+                            className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 8. HOMEWORK DESK */}
+              {roleTab === "homework" && (
+                <div className="grid lg:grid-cols-12 gap-6 items-start">
+                  <form
+                    onSubmit={handleAddHomework}
+                    className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
+                  >
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                      DAILY ASSIGNMENTS
+                    </span>
+                    <h2 className="text-lg font-black text-slate-900">+ Assign New Homework</h2>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Wing</label>
+                        <select
+                          value={hwWing}
+                          onChange={(e) => {
+                            const w = e.target.value as Wing;
+                            setHwWing(w);
+                            setHwClass(WING_COURSES[w][0]);
+                          }}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="School">School</option>
+                          <option value="Pharmacy">Pharmacy</option>
+                          <option value="Polytechnic">Polytechnic</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Due Date</label>
+                        <input
+                          type="date"
+                          value={hwDueDate}
+                          onChange={(e) => setHwDueDate(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Class / Course</label>
+                      <select
+                        value={hwClass}
+                        onChange={(e) => setHwClass(e.target.value)}
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                      >
+                        {WING_COURSES[hwWing].map((c) => (
+                          <option key={c} value={c}>
+                            {c}
                           </option>
                         ))}
                       </select>
@@ -4046,43 +5394,31 @@ export default function JMCTCampusERP() {
                         <input
                           required
                           type="text"
-                          value={uploadSubject}
-                          onChange={(e) => setUploadSubject(e.target.value)}
-                          placeholder="e.g. Pharmaceutics"
+                          value={hwSubject}
+                          onChange={(e) => setHwSubject(e.target.value)}
+                          placeholder="e.g. Science"
                           className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-700">Marks</label>
+                        <label className="text-xs font-bold text-slate-700">Assigned By</label>
                         <input
-                          required
-                          type="number"
-                          value={uploadMarks}
-                          onChange={(e) => setUploadMarks(e.target.value)}
+                          type="text"
+                          value={hwAssignedBy}
+                          onChange={(e) => setHwAssignedBy(e.target.value)}
                           className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-slate-700">Unit / Topic</label>
-                      <input
-                        type="text"
-                        value={uploadUnit}
-                        onChange={(e) => setUploadUnit(e.target.value)}
-                        placeholder="e.g. Unit 3 - Dosage Forms"
-                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-slate-700">Question Statement</label>
+                      <label className="text-xs font-bold text-slate-700">Homework Task / Topic</label>
                       <textarea
                         required
                         rows={3}
-                        value={uploadQuestionText}
-                        onChange={(e) => setUploadQuestionText(e.target.value)}
-                        placeholder="Enter question for unit test / sessional / semester exam..."
+                        value={hwTitle}
+                        onChange={(e) => setHwTitle(e.target.value)}
+                        placeholder="Enter assignment details for students..."
                         className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
                       />
                     </div>
@@ -4091,1488 +5427,517 @@ export default function JMCTCampusERP() {
                       type="submit"
                       className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
                     >
-                      Upload Question to Question Bank
+                      Publish Homework
                     </button>
                   </form>
 
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">
-                        Your Submitted Questions ({teacherUploadedQuestions.length})
-                      </h4>
-                      <span className="text-[10px] font-bold text-slate-400">
-                        By {teacherName}
-                      </span>
+                  <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                      <h2 className="font-black text-base text-slate-900">
+                        Homework & Assignment Tracker ({visibleHomework.length})
+                      </h2>
+                      <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
                     </div>
-                    {teacherUploadedQuestions.length === 0 ? (
-                      <p className="text-xs text-slate-500">
-                        No questions uploaded under &ldquo;{teacherName}&rdquo; yet.
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {teacherUploadedQuestions.map((tq) => (
-                          <div
-                            key={tq.id}
-                            className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs flex items-center justify-between gap-2"
-                          >
-                            <div className="truncate">
-                              <p className="font-bold text-slate-800 truncate">
-                                {tq.wing} • {tq.className} ({tq.academicYear})
-                              </p>
-                              <p className="text-[11px] text-slate-500 truncate">
-                                {tq.subject} • {tq.marks} Marks
-                              </p>
-                            </div>
-                            <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-extrabold shrink-0">
-                              ✓ Sent to Bank
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 3. SYSTEM-WISE PEON / SUPPORT STAFF MODULE */}
-          {roleTab === "peon" && (
-            <div className="space-y-5">
-              <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                      SYSTEM MODULE 03 • HOUSEKEEPING, LAB & BELL OPERATIONS
-                    </span>
-                    <h2 className="text-lg font-black text-slate-900">
-                      Peon & Support Staff Duty System
-                    </h2>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-extrabold tabular-nums">
-                    <span className="px-3 py-1 rounded-lg bg-slate-100 text-slate-800">
-                      Total: {visiblePeonTasks.length}
-                    </span>
-                    <span className="px-3 py-1 rounded-lg bg-amber-100 text-amber-900">
-                      Pending: {visiblePeonTasks.length - completedPeonCount}
-                    </span>
-                    <span className="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800">
-                      Done: {completedPeonCount}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <p className="font-extrabold text-indigo-700">STEP 1: WING & ZONE</p>
-                    <p className="text-slate-600 mt-0.5">
-                      Select School, Pharmacy, or Polytechnic block/lab.
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <p className="font-extrabold text-indigo-700">STEP 2: SHIFT DISPATCH</p>
-                    <p className="text-slate-600 mt-0.5">
-                      Assign duty timing, water/sanitation, or file task.
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <p className="font-extrabold text-indigo-700">STEP 3: LIVE SIGN-OFF</p>
-                    <p className="text-slate-600 mt-0.5">
-                      Mark duty Completed once floor/lab check is done.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid lg:grid-cols-12 gap-6 items-start">
-                <form
-                  onSubmit={handleAddPeonTask}
-                  className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
-                >
-                  <h3 className="text-base font-black text-slate-900">+ Dispatch New Duty Slip</h3>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Support Staff Name</label>
-                    <input
-                      required
-                      type="text"
-                      value={peonStaff}
-                      onChange={(e) => setPeonStaff(e.target.value)}
-                      className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700">Wing</label>
-                      <select
-                        value={peonWing}
-                        onChange={(e) => setPeonWing(e.target.value as Wing)}
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                      >
-                        <option value="School">School</option>
-                        <option value="Pharmacy">Pharmacy</option>
-                        <option value="Polytechnic">Polytechnic</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-700">Shift</label>
-                      <select
-                        value={peonShift}
-                        onChange={(e) => setPeonShift(e.target.value)}
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                      >
-                        <option value="Shift A • 07:30 AM – 03:30 PM">Shift A (Morning)</option>
-                        <option value="Shift B • 11:00 AM – 07:00 PM">Shift B (Day/Eve)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Building / Lab Zone</label>
-                    <input
-                      type="text"
-                      value={peonZone}
-                      onChange={(e) => setPeonZone(e.target.value)}
-                      placeholder="e.g. Lab 2 / Ground Floor Corridor"
-                      className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Duty Instructions</label>
-                    <input
-                      required
-                      type="text"
-                      value={peonTaskText}
-                      onChange={(e) => setPeonTaskText(e.target.value)}
-                      placeholder="e.g. Water Cooler Refill & Bell Duty"
-                      className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
-                  >
-                    Assign Duty to Roster
-                  </button>
-                </form>
-
-                <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                  <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="font-black text-base text-slate-900">
-                      Duty Roster & Completion Queue ({visiblePeonTasks.length})
-                    </h3>
-                    <span className="text-xs font-semibold text-slate-500">
-                      Wing: {wingFilter} • Saved Locally
-                    </span>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {visiblePeonTasks.map((t) => (
-                      <div
-                        key={t.id}
-                        className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
-                      >
-                        <div className="space-y-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-indigo-600">
-                              {t.id}
-                            </span>
-                            <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
-                              {t.wing}
-                            </span>
-                            <span className="text-xs font-bold text-slate-700">{t.zone}</span>
-                          </div>
-                          <p className="font-extrabold text-slate-900 text-sm">{t.locationTask}</p>
-                          <p className="text-xs text-slate-500">
-                            Assigned to: <strong>{t.staffName}</strong> • {t.shift}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setPeonTasks((prev) =>
-                              prev.map((item) =>
-                                item.id === t.id ? { ...item, done: !item.done } : item
-                              )
-                            )
-                          }
-                          className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
-                            t.done
-                              ? "bg-emerald-600 text-white shadow-2xs"
-                              : "bg-amber-100 text-amber-900 hover:bg-amber-200"
-                          }`}
-                        >
-                          {t.done ? "✓ Completed" : "Mark Completed"}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 4. SECURITY GUARD DESK */}
-          {roleTab === "guard" && (
-            <div className="grid lg:grid-cols-12 gap-6 items-start">
-              <form
-                onSubmit={handleAddGatePass}
-                className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4"
-              >
-                <h2 className="text-lg font-black text-slate-900">+ Campus Gate Pass Entry</h2>
-                <div>
-                  <label className="text-xs font-bold text-slate-700">On-Duty Security Guard</label>
-                  <input
-                    type="text"
-                    value={guardName}
-                    onChange={(e) => setGuardName(e.target.value)}
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Visitor / Student Name</label>
-                  <input
-                    required
-                    type="text"
-                    value={visitorName}
-                    onChange={(e) => setVisitorName(e.target.value)}
-                    placeholder="e.g. Mr. Anil Kulkarni"
-                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Category</label>
-                    <select
-                      value={visitorRole}
-                      onChange={(e) => setVisitorRole(e.target.value as GatePass["roleType"])}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="Parent">Parent</option>
-                      <option value="Student">Student</option>
-                      <option value="Vendor">Vendor</option>
-                      <option value="Visitor">Visitor</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Wing</label>
-                    <select
-                      value={visitorWing}
-                      onChange={(e) => setVisitorWing(e.target.value as Wing)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="School">School</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Polytechnic">Polytechnic</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Purpose of Visit</label>
-                  <input
-                    type="text"
-                    value={visitorPurpose}
-                    onChange={(e) => setVisitorPurpose(e.target.value)}
-                    placeholder="e.g. Accounts Office / Lab Pass"
-                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
-                >
-                  Log Gate Entry
-                </button>
-              </form>
-
-              <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                  <h2 className="font-black text-base text-slate-900">
-                    Gate Pass & Visitor Log ({gatePasses.length})
-                  </h2>
-                  <span className="text-xs text-slate-500 font-semibold">{guardName}</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {gatePasses.map((g) => (
-                    <div
-                      key={g.id}
-                      className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-indigo-600">{g.id}</span>
-                          <span className="font-extrabold text-slate-900">{g.visitorName}</span>
-                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
-                            {g.roleType} • {g.wing}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {g.purpose} • Time: {g.time}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setGatePasses((prev) =>
-                            prev.map((item) =>
-                              item.id === g.id
-                                ? {
-                                    ...item,
-                                    status: item.status === "Inside" ? "Exited" : "Inside",
-                                  }
-                                : item
-                            )
-                          )
-                        }
-                        className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer ${
-                          g.status === "Inside"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-slate-200 text-slate-700"
-                        }`}
-                      >
-                        {g.status === "Inside" ? "● Inside (Mark Exit)" : "Exited (Mark In)"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 5. PARENTS DESK & ONLINE PAYMENT */}
-          {roleTab === "parent" && (
-            <div className="space-y-5">
-              <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-                  <div>
-                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-600">
-                      PARENT & STUDENT SELF-SERVICE DESK
-                    </span>
-                    <h2 className="text-2xl font-black text-slate-900">
-                      Live Attendance, Fee Balance & Online Fee Payment
-                    </h2>
-                  </div>
-                  <input
-                    type="text"
-                    value={parentLookupId}
-                    onChange={(e) => setParentLookupId(e.target.value)}
-                    placeholder="Enter Student ID (e.g. JMCT-PH-204)"
-                    className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
-                  />
-                </div>
-
-                {parentStudent ? (
-                  <div className="grid sm:grid-cols-4 gap-5 items-center">
-                    <div>
-                      <p className="text-[10px] font-extrabold uppercase text-slate-400">
-                        STUDENT PROFILE
-                      </p>
-                      <p className="text-lg font-black text-slate-900 mt-0.5">{parentStudent.name}</p>
-                      <p className="text-xs font-semibold text-indigo-600">
-                        {parentStudent.wing} • {parentStudent.course}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-extrabold uppercase text-slate-400">
-                        ATTENDANCE
-                      </p>
-                      <p className="text-2xl font-black text-emerald-600 mt-0.5 tabular-nums">
-                        {Math.round((parentStudent.presentDays / parentStudent.totalDays) * 100)}%
-                      </p>
-                      <p className="text-xs text-slate-500 tabular-nums">
-                        {parentStudent.presentDays}/{parentStudent.totalDays} Days • Today:{" "}
-                        {parentStudent.todayStatus}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-extrabold uppercase text-slate-400">
-                        FEE BALANCE
-                      </p>
-                      <p className="text-2xl font-black text-rose-600 mt-0.5 tabular-nums">
-                        ₹{(parentStudent.totalFee - parentStudent.paidFee).toLocaleString("en-IN")}
-                      </p>
-                      <p className="text-xs text-slate-500 tabular-nums">
-                        Paid: ₹{parentStudent.paidFee.toLocaleString("en-IN")} / ₹
-                        {parentStudent.totalFee.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
-                      {parentStudent.totalFee - parentStudent.paidFee > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => openOnlinePaymentModal(parentStudent)}
-                          className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black cursor-pointer"
-                        >
-                          Pay Fee Online
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setReceiptStudent(parentStudent)}
-                        className="px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-bold cursor-pointer"
-                      >
-                        Receipt
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-slate-500">
-                    Try a valid Student ID such as <strong>JMCT-SC-101</strong>,{" "}
-                    <strong>JMCT-PH-204</strong>, or <strong>JMCT-PO-309</strong>.
-                  </p>
-                )}
-              </div>
-
-              {parentStudent && (
-                <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                  <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-black text-base text-slate-900">
-                      Fee Payment History — {parentStudent.name} ({parentPayments.length})
-                    </h3>
-                    <span className="text-xs text-slate-500 font-mono">{parentStudent.id}</span>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {parentPayments.length === 0 ? (
-                      <p className="p-6 text-xs text-slate-500">
-                        No recorded online transactions yet for this student ID.
-                      </p>
-                    ) : (
-                      parentPayments.map((p) => (
+                    <div className="divide-y divide-slate-100">
+                      {visibleHomework.map((hw) => (
                         <div
-                          key={p.txnId}
-                          className="px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs"
+                          key={hw.id}
+                          className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
                         >
-                          <div>
-                            <p className="font-mono font-bold text-indigo-700">{p.txnId}</p>
-                            <p className="text-slate-600 mt-0.5">
-                              Mode: <strong>{p.method}</strong>
-                              {p.upiId ? ` (${p.upiId})` : ""} • {p.paidAt}
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-indigo-600">{hw.id}</span>
+                              <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
+                                {hw.wing} • {hw.subject}
+                              </span>
+                              <span className="text-xs font-bold text-slate-600">
+                                Due: {hw.dueDate}
+                              </span>
+                            </div>
+                            <p className="font-extrabold text-slate-900 text-sm">{hw.title}</p>
+                            <p className="text-xs text-slate-500">
+                              {hw.className} • Assigned by: <strong>{hw.assignedBy}</strong>
                             </p>
                           </div>
-                          <span className="font-black text-emerald-700 text-sm tabular-nums">
-                            + ₹{p.amount.toLocaleString("en-IN")}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setHomeworkList((prev) =>
+                                prev.map((item) =>
+                                  item.id === hw.id ? { ...item, completed: !item.completed } : item
+                                )
+                              )
+                            }
+                            className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                              hw.completed
+                                ? "bg-emerald-600 text-white"
+                                : "bg-amber-100 text-amber-900 hover:bg-amber-200"
+                            }`}
+                          >
+                            {hw.completed ? "✓ Completed" : "Mark Completed"}
+                          </button>
                         </div>
-                      ))
-                    )}
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* 6. QUESTION BANK */}
-          {roleTab === "qbank" && (
-            <>
-              {!hasCoordinatorPermission ? (
-                <div className="bg-white rounded-2xl p-8 border border-slate-200/90 shadow-2xs max-w-lg mx-auto space-y-4">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-rose-600">
-                      QUESTION BANK • COORDINATOR PERMISSION REQUIRED
+              {/* 9. INVENTORY DESK */}
+              {roleTab === "inventory" && (
+                <div className="grid lg:grid-cols-12 gap-6 items-start">
+                  <form
+                    onSubmit={handleAddInventoryItem}
+                    className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
+                  >
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                      LAB & CAMPUS STOCK
                     </span>
-                    <h2 className="text-xl font-black text-slate-900">
-                      Question Bank Access Restricted to Coordinators
-                    </h2>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Only permitted Coordinators can open, edit, and print the{" "}
-                      <strong>Question Bank</strong>. Teachers upload questions by Wing, Class,
-                      and Academic Year from the <strong>02 • TEACHERS</strong> tab.
-                    </p>
-                  </div>
+                    <h2 className="text-lg font-black text-slate-900">+ Add Inventory Item</h2>
 
-                  {coordAuthError && (
-                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
-                      ⚠ {coordAuthError}
-                    </div>
-                  )}
-
-                  <form onSubmit={handleVerifyCoordinatorPermission} className="space-y-3">
                     <div>
-                      <label className="text-xs font-bold text-slate-700">
-                        Coordinator Permission Code
-                      </label>
+                      <label className="text-xs font-bold text-slate-700">Item Name</label>
                       <input
                         required
-                        type="password"
-                        value={coordPasscodeInput}
-                        onChange={(e) => setCoordPasscodeInput(e.target.value)}
-                        placeholder="Enter Coordinator Passcode"
-                        className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
+                        type="text"
+                        value={invName}
+                        onChange={(e) => setInvName(e.target.value)}
+                        placeholder="e.g. Measuring Cylinder 100ml"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
                       />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Wing</label>
+                        <select
+                          value={invWing}
+                          onChange={(e) => setInvWing(e.target.value as Wing)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="School">School</option>
+                          <option value="Pharmacy">Pharmacy</option>
+                          <option value="Polytechnic">Polytechnic</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Category</label>
+                        <input
+                          type="text"
+                          value={invCategory}
+                          onChange={(e) => setInvCategory(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Qty</label>
+                        <input
+                          required
+                          type="number"
+                          min={0}
+                          value={invQty}
+                          onChange={(e) => setInvQty(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black tabular-nums"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Unit</label>
+                        <input
+                          type="text"
+                          value={invUnit}
+                          onChange={(e) => setInvUnit(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Status</label>
+                        <select
+                          value={invStatus}
+                          onChange={(e) =>
+                            setInvStatus(e.target.value as InventoryItem["status"])
+                          }
+                          className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="Available">Available</option>
+                          <option value="Low Stock">Low Stock</option>
+                          <option value="Out of Stock">Out of Stock</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <button
                       type="submit"
                       className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
                     >
-                      Verify Coordinator Permission →
+                      Save to Inventory
                     </button>
                   </form>
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden space-y-4">
-                  <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3 print:hidden">
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                        QUESTION BANK • COORDINATOR PERMISSION GRANTED • EDIT & PRINT
-                      </span>
-                      <h2 className="font-black text-lg text-slate-900">
-                        Question Bank ({visibleQuestions.length} Questions •{" "}
-                        {selectedPaperQuestions.length} Selected / {totalPaperMarks} Marks)
+
+                  <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                      <h2 className="font-black text-base text-slate-900">
+                        Inventory & Lab Stock Register ({visibleInventory.length})
                       </h2>
+                      <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <select
-                        value={qClassFilter}
-                        onChange={(e) => setQClassFilter(e.target.value)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                      >
-                        <option value="All">All Classes</option>
-                        {availableQuestionClasses.map((cls) => (
-                          <option key={cls} value={cls}>
-                            {cls}
-                          </option>
-                        ))}
-                      </select>
-
-                      <select
-                        value={qYearFilter}
-                        onChange={(e) => setQYearFilter(e.target.value)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                      >
-                        <option value="All">All Years</option>
-                        {ACADEMIC_YEARS.map((yr) => (
-                          <option key={yr} value={yr}>
-                            Year {yr}
-                          </option>
-                        ))}
-                      </select>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowPaperPreview((v) => !v)}
-                        className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-extrabold cursor-pointer"
-                      >
-                        {showPaperPreview ? "Back to Edit List" : "Preview & Edit Paper"}
-                      </button>
-
-                      {showPaperPreview && (
-                        <button
-                          type="button"
-                          onClick={() => window.print()}
-                          className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold cursor-pointer"
+                    <div className="divide-y divide-slate-100">
+                      {visibleInventory.map((inv) => (
+                        <div
+                          key={inv.id}
+                          className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
                         >
-                          Print / Save PDF
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHasCoordinatorPermission(false);
-                          setShowPaperPreview(false);
-                          setEditingQuestion(null);
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
-                      >
-                        Lock
-                      </button>
+                          <div className="space-y-0.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-indigo-600">{inv.id}</span>
+                              <span className="font-extrabold text-slate-900">{inv.itemName}</span>
+                              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
+                                {inv.wing} • {inv.category}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 tabular-nums">
+                              Stock Available: <strong>{inv.quantity}</strong> {inv.unit}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setInventoryList((prev) =>
+                                prev.map((item) =>
+                                  item.id === inv.id
+                                    ? {
+                                        ...item,
+                                        status:
+                                          item.status === "Available"
+                                            ? "Low Stock"
+                                            : item.status === "Low Stock"
+                                            ? "Out of Stock"
+                                            : "Available",
+                                      }
+                                    : item
+                                )
+                              )
+                            }
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer ${
+                              inv.status === "Available"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : inv.status === "Low Stock"
+                                ? "bg-amber-100 text-amber-900"
+                                : "bg-rose-100 text-rose-800"
+                            }`}
+                          >
+                            {inv.status} (Cycle)
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {showPaperPreview ? (
-                    <div className="p-6 space-y-5 bg-slate-50/60 print:bg-white print:p-2">
-                      <div className="bg-white p-4 rounded-xl border border-slate-200 grid sm:grid-cols-3 gap-3 print:hidden">
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-600">
-                            Exam / Paper Title
-                          </label>
-                          <input
-                            type="text"
-                            value={paperTitle}
-                            onChange={(e) => setPaperTitle(e.target.value)}
-                            className="w-full mt-1 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-600">
-                            Time Duration
-                          </label>
-                          <input
-                            type="text"
-                            value={paperDuration}
-                            onChange={(e) => setPaperDuration(e.target.value)}
-                            className="w-full mt-1 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-600">
-                            Paper Instructions
-                          </label>
-                          <input
-                            type="text"
-                            value={paperInstructions}
-                            onChange={(e) => setPaperInstructions(e.target.value)}
-                            className="w-full mt-1 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold"
-                          />
-                        </div>
+              {/* 10. HR & STAFF LOG DESK */}
+              {roleTab === "hr" && (
+                <div className="grid lg:grid-cols-12 gap-6 items-start">
+                  <form
+                    onSubmit={handleAddHrStaff}
+                    className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
+                  >
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                      FACULTY, SUPPORT & GATE STAFF
+                    </span>
+                    <h2 className="text-lg font-black text-slate-900">+ Add Staff Record</h2>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Staff Full Name</label>
+                      <input
+                        required
+                        type="text"
+                        value={hrName}
+                        onChange={(e) => setHrName(e.target.value)}
+                        placeholder="e.g. Mr. Deepak Pawar"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Designation / Role</label>
+                      <input
+                        required
+                        type="text"
+                        value={hrRoleTitle}
+                        onChange={(e) => setHrRoleTitle(e.target.value)}
+                        placeholder="e.g. Lab Assistant / Clerk"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Wing</label>
+                        <select
+                          value={hrWing}
+                          onChange={(e) => setHrWing(e.target.value as Wing)}
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="School">School</option>
+                          <option value="Pharmacy">Pharmacy</option>
+                          <option value="Polytechnic">Polytechnic</option>
+                        </select>
                       </div>
-
-                      <div className="bg-white p-6 rounded-2xl border border-slate-300 space-y-4 print:border-none print:p-0">
-                        <div className="border-b-2 border-slate-800 pb-3 text-center space-y-1">
-                          <p className="text-xs font-black uppercase tracking-wider text-slate-700">
-                            JMCT GROUP OF INSTITUTIONS, NASHIK
-                          </p>
-                          <h3 className="text-lg font-black text-slate-900">{paperTitle}</h3>
-                          <p className="text-xs font-bold text-slate-600">
-                            Wing: {wingFilter} • Class: {qClassFilter} • Academic Year:{" "}
-                            {qYearFilter}
-                          </p>
-                          <div className="flex justify-between text-xs font-extrabold text-slate-800 pt-2">
-                            <span>Time: {paperDuration}</span>
-                            <span>Max Marks: {totalPaperMarks}</span>
-                          </div>
-                          <p className="text-[11px] italic text-slate-600 text-left pt-1">
-                            Note: {paperInstructions}
-                          </p>
-                        </div>
-
-                        {selectedPaperQuestions.length === 0 ? (
-                          <p className="text-sm text-slate-500 text-center py-6">
-                            No questions selected for this paper. Go back and tick &ldquo;Include in
-                            Paper&rdquo; on the required questions.
-                          </p>
-                        ) : (
-                          <ol className="list-decimal pl-5 space-y-4 text-sm">
-                            {selectedPaperQuestions.map((q) => (
-                              <li key={q.id} className="font-semibold text-slate-900">
-                                <div className="flex justify-between gap-4">
-                                  <span>{q.questionText}</span>
-                                  <span className="font-black text-slate-900 whitespace-nowrap">
-                                    [{q.marks} Marks]
-                                  </span>
-                                </div>
-                                <p className="text-[11px] text-slate-500 font-normal print:hidden">
-                                  {q.wing} • {q.className} • Year {q.academicYear} • {q.subject} (
-                                  {q.unit}) • Uploaded by {q.uploadedBy}
-                                </p>
-                              </li>
-                            ))}
-                          </ol>
-                        )}
+                      <div>
+                        <label className="text-xs font-bold text-slate-700">Phone</label>
+                        <input
+                          type="tel"
+                          value={hrPhone}
+                          onChange={(e) => setHrPhone(e.target.value)}
+                          placeholder="98230XXXXX"
+                          className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        />
                       </div>
                     </div>
-                  ) : (
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Shift Timing</label>
+                      <input
+                        type="text"
+                        value={hrShift}
+                        onChange={(e) => setHrShift(e.target.value)}
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
+                    >
+                      Add to Staff Roster
+                    </button>
+                  </form>
+
+                  <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                      <h2 className="font-black text-base text-slate-900">
+                        HR & Duty Roster ({visibleHrStaff.length} Staff)
+                      </h2>
+                      <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
+                    </div>
                     <div className="divide-y divide-slate-100">
-                      {visibleQuestions.length === 0 ? (
-                        <div className="p-8 text-center text-sm text-slate-500">
-                          No questions match the selected Wing, Class, or Academic Year filter.
-                        </div>
-                      ) : (
-                        visibleQuestions.map((q) => {
-                          const isIncluded = q.includedInPaper !== false;
-                          return (
-                            <div
-                              key={q.id}
-                              className={`px-6 py-4 space-y-2 transition ${
-                                isIncluded ? "hover:bg-slate-50/70" : "bg-slate-50/60 opacity-75"
-                              }`}
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <label className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-700 cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      checked={isIncluded}
-                                      onChange={() => handleToggleIncludeInPaper(q.id)}
-                                      className="w-4 h-4 accent-indigo-600 cursor-pointer"
-                                    />
-                                    <span>Include in Paper</span>
-                                  </label>
-                                  <span className="text-xs font-extrabold text-indigo-700">
-                                    • {q.id} • {q.wing} • {q.className} • Year {q.academicYear} •{" "}
-                                    {q.subject} ({q.unit})
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-black">
-                                    {q.marks} Marks
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setEditingQuestion({ ...q })}
-                                    className="px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteQuestion(q.id)}
-                                    className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              </div>
-                              <p className="text-sm font-semibold text-slate-800">
-                                {q.questionText}
-                              </p>
-                              <p className="text-[11px] text-slate-500">
-                                Uploaded by: <strong>{q.uploadedBy}</strong>
-                              </p>
+                      {visibleHrStaff.map((st) => (
+                        <div
+                          key={st.id}
+                          className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-indigo-600">{st.id}</span>
+                              <span className="font-extrabold text-slate-900">{st.name}</span>
+                              <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
+                                {st.wing}
+                              </span>
                             </div>
-                          );
-                        })
-                      )}
+                            <p className="text-xs font-semibold text-slate-700">{st.roleTitle}</p>
+                            <p className="text-xs text-slate-500">
+                              Shift: {st.shift} • Ph: {st.phone}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setHrStaffList((prev) =>
+                                prev.map((item) =>
+                                  item.id === st.id
+                                    ? {
+                                        ...item,
+                                        status:
+                                          item.status === "On Duty"
+                                            ? "On Leave"
+                                            : item.status === "On Leave"
+                                            ? "Shift Completed"
+                                            : "On Duty",
+                                      }
+                                    : item
+                                )
+                              )
+                            }
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer ${
+                              st.status === "On Duty"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : st.status === "On Leave"
+                                ? "bg-rose-100 text-rose-800"
+                                : "bg-slate-200 text-slate-700"
+                            }`}
+                          >
+                            {st.status}
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
+
+              {/* 11. NOTIFICATIONS DESK */}
+              {roleTab === "notifications" && (
+                <div className="grid lg:grid-cols-12 gap-6 items-start">
+                  <form
+                    onSubmit={handleAddNotification}
+                    className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
+                  >
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                      CAMPUS ALERTS & CIRCULARS
+                    </span>
+                    <h2 className="text-lg font-black text-slate-900">+ Send Campus Notice</h2>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-700">Wing</label>
+                        <select
+                          value={notWing}
+                          onChange={(e) => setNotWing(e.target.value as Wing | "All")}
+                          className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="All">All</option>
+                          <option value="School">School</option>
+                          <option value="Pharmacy">Pharmacy</option>
+                          <option value="Polytechnic">Polytechnic</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-700">Audience</label>
+                        <select
+                          value={notAudience}
+                          onChange={(e) =>
+                            setNotAudience(e.target.value as CampusNotification["audience"])
+                          }
+                          className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="All">All</option>
+                          <option value="Students">Students</option>
+                          <option value="Parents">Parents</option>
+                          <option value="Faculty & Staff">Staff</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-700">Type</label>
+                        <select
+                          value={notCategory}
+                          onChange={(e) =>
+                            setNotCategory(e.target.value as CampusNotification["category"])
+                          }
+                          className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+                        >
+                          <option value="Fee Alert">Fee Alert</option>
+                          <option value="Attendance">Attendance</option>
+                          <option value="Exam & Q-Bank">Exam</option>
+                          <option value="Operations">Operations</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Notice Headline</label>
+                      <input
+                        required
+                        type="text"
+                        value={notTitle}
+                        onChange={(e) => setNotTitle(e.target.value)}
+                        placeholder="e.g. Lab Practical & Fee Clearance Notice"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">Message</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={notMessage}
+                        onChange={(e) => setNotMessage(e.target.value)}
+                        placeholder="Enter details for students, parents, or staff..."
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
+                    >
+                      Publish Notification
+                    </button>
+                  </form>
+
+                  <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                      <h2 className="font-black text-base text-slate-900">
+                        Active Campus Notifications ({visibleNotifications.length})
+                      </h2>
+                      <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {visibleNotifications.map((nt) => (
+                        <div
+                          key={nt.id}
+                          className="px-6 py-4 flex flex-wrap items-start justify-between gap-4 hover:bg-slate-50/70"
+                        >
+                          <div className="space-y-1 max-w-2xl">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
+                                {nt.category}
+                              </span>
+                              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
+                                Wing: {nt.wing} • For: {nt.audience}
+                              </span>
+                              <span className="text-[11px] text-slate-400">{nt.dateLabel}</span>
+                            </div>
+                            <h3 className="font-extrabold text-slate-900 text-sm">{nt.title}</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed">{nt.message}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setNotificationsData((prev) =>
+                                prev.filter((item) => item.id !== nt.id)
+                              )
+                            }
+                            className="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </>
           )}
-
-          {/* 7. TIMETABLE DESK */}
-          {roleTab === "timetable" && (
-            <div className="grid lg:grid-cols-12 gap-6 items-start">
-              <form
-                onSubmit={handleAddTimetableSlot}
-                className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
-              >
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  PERIOD & LAB ROSTER
-                </span>
-                <h2 className="text-lg font-black text-slate-900">+ Add Timetable Slot</h2>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Wing</label>
-                    <select
-                      value={ttWing}
-                      onChange={(e) => {
-                        const w = e.target.value as Wing;
-                        setTtWing(w);
-                        setTtClass(WING_COURSES[w][0]);
-                      }}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="School">School</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Polytechnic">Polytechnic</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Day</label>
-                    <select
-                      value={ttDay}
-                      onChange={(e) => setTtDay(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      {DAYS_OF_WEEK.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Class / Course</label>
-                  <select
-                    value={ttClass}
-                    onChange={(e) => setTtClass(e.target.value)}
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                  >
-                    {WING_COURSES[ttWing].map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Time Slot</label>
-                    <input
-                      required
-                      type="text"
-                      value={ttTiming}
-                      onChange={(e) => setTtTiming(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Room / Lab</label>
-                    <input
-                      type="text"
-                      value={ttRoom}
-                      onChange={(e) => setTtRoom(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Subject / Lab Name</label>
-                  <input
-                    required
-                    type="text"
-                    value={ttSubject}
-                    onChange={(e) => setTtSubject(e.target.value)}
-                    placeholder="e.g. Organic Chemistry / Physics"
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Faculty Name</label>
-                  <input
-                    type="text"
-                    value={ttFaculty}
-                    onChange={(e) => setTtFaculty(e.target.value)}
-                    placeholder="e.g. Prof. Rajesh Deshmukh"
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
-                >
-                  Add Period to Timetable
-                </button>
-              </form>
-
-              <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                  <h2 className="font-black text-base text-slate-900">
-                    Class & Lab Timetable ({visibleTimetable.length} Slots)
-                  </h2>
-                  <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {visibleTimetable.map((slot) => (
-                    <div
-                      key={slot.id}
-                      className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
-                            {slot.wing} • {slot.day}
-                          </span>
-                          <span className="text-xs font-bold text-slate-800">{slot.timing}</span>
-                          <span className="text-xs font-semibold text-slate-500">
-                            • {slot.roomOrLab}
-                          </span>
-                        </div>
-                        <p className="font-extrabold text-slate-900 text-sm">{slot.subject}</p>
-                        <p className="text-xs text-slate-500">
-                          {slot.className} • Faculty: <strong>{slot.faculty}</strong>
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setTimetableSlots((prev) => prev.filter((item) => item.id !== slot.id))
-                        }
-                        className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 8. HOMEWORK DESK */}
-          {roleTab === "homework" && (
-            <div className="grid lg:grid-cols-12 gap-6 items-start">
-              <form
-                onSubmit={handleAddHomework}
-                className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
-              >
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  DAILY ASSIGNMENTS
-                </span>
-                <h2 className="text-lg font-black text-slate-900">+ Assign New Homework</h2>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Wing</label>
-                    <select
-                      value={hwWing}
-                      onChange={(e) => {
-                        const w = e.target.value as Wing;
-                        setHwWing(w);
-                        setHwClass(WING_COURSES[w][0]);
-                      }}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="School">School</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Polytechnic">Polytechnic</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Due Date</label>
-                    <input
-                      type="date"
-                      value={hwDueDate}
-                      onChange={(e) => setHwDueDate(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Class / Course</label>
-                  <select
-                    value={hwClass}
-                    onChange={(e) => setHwClass(e.target.value)}
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                  >
-                    {WING_COURSES[hwWing].map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Subject</label>
-                    <input
-                      required
-                      type="text"
-                      value={hwSubject}
-                      onChange={(e) => setHwSubject(e.target.value)}
-                      placeholder="e.g. Science"
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Assigned By</label>
-                    <input
-                      type="text"
-                      value={hwAssignedBy}
-                      onChange={(e) => setHwAssignedBy(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Homework Task / Topic</label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={hwTitle}
-                    onChange={(e) => setHwTitle(e.target.value)}
-                    placeholder="Enter assignment details for students..."
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
-                >
-                  Publish Homework
-                </button>
-              </form>
-
-              <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                  <h2 className="font-black text-base text-slate-900">
-                    Homework & Assignment Tracker ({visibleHomework.length})
-                  </h2>
-                  <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {visibleHomework.map((hw) => (
-                    <div
-                      key={hw.id}
-                      className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-indigo-600">{hw.id}</span>
-                          <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
-                            {hw.wing} • {hw.subject}
-                          </span>
-                          <span className="text-xs font-bold text-slate-600">
-                            Due: {hw.dueDate}
-                          </span>
-                        </div>
-                        <p className="font-extrabold text-slate-900 text-sm">{hw.title}</p>
-                        <p className="text-xs text-slate-500">
-                          {hw.className} • Assigned by: <strong>{hw.assignedBy}</strong>
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setHomeworkList((prev) =>
-                            prev.map((item) =>
-                              item.id === hw.id ? { ...item, completed: !item.completed } : item
-                            )
-                          )
-                        }
-                        className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
-                          hw.completed
-                            ? "bg-emerald-600 text-white"
-                            : "bg-amber-100 text-amber-900 hover:bg-amber-200"
-                        }`}
-                      >
-                        {hw.completed ? "✓ Completed" : "Mark Completed"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 9. INVENTORY DESK */}
-          {roleTab === "inventory" && (
-            <div className="grid lg:grid-cols-12 gap-6 items-start">
-              <form
-                onSubmit={handleAddInventoryItem}
-                className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
-              >
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  LAB & CAMPUS STOCK
-                </span>
-                <h2 className="text-lg font-black text-slate-900">+ Add Inventory Item</h2>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Item Name</label>
-                  <input
-                    required
-                    type="text"
-                    value={invName}
-                    onChange={(e) => setInvName(e.target.value)}
-                    placeholder="e.g. Measuring Cylinder 100ml"
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Wing</label>
-                    <select
-                      value={invWing}
-                      onChange={(e) => setInvWing(e.target.value as Wing)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="School">School</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Polytechnic">Polytechnic</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Category</label>
-                    <input
-                      type="text"
-                      value={invCategory}
-                      onChange={(e) => setInvCategory(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Qty</label>
-                    <input
-                      required
-                      type="number"
-                      min={0}
-                      value={invQty}
-                      onChange={(e) => setInvQty(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black tabular-nums"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Unit</label>
-                    <input
-                      type="text"
-                      value={invUnit}
-                      onChange={(e) => setInvUnit(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Status</label>
-                    <select
-                      value={invStatus}
-                      onChange={(e) =>
-                        setInvStatus(e.target.value as InventoryItem["status"])
-                      }
-                      className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="Available">Available</option>
-                      <option value="Low Stock">Low Stock</option>
-                      <option value="Out of Stock">Out of Stock</option>
-                    </select>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
-                >
-                  Save to Inventory
-                </button>
-              </form>
-
-              <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                  <h2 className="font-black text-base text-slate-900">
-                    Inventory & Lab Stock Register ({visibleInventory.length})
-                  </h2>
-                  <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {visibleInventory.map((inv) => (
-                    <div
-                      key={inv.id}
-                      className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
-                    >
-                      <div className="space-y-0.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-indigo-600">{inv.id}</span>
-                          <span className="font-extrabold text-slate-900">{inv.itemName}</span>
-                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
-                            {inv.wing} • {inv.category}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 tabular-nums">
-                          Stock Available: <strong>{inv.quantity}</strong> {inv.unit}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setInventoryList((prev) =>
-                            prev.map((item) =>
-                              item.id === inv.id
-                                ? {
-                                    ...item,
-                                    status:
-                                      item.status === "Available"
-                                        ? "Low Stock"
-                                        : item.status === "Low Stock"
-                                        ? "Out of Stock"
-                                        : "Available",
-                                  }
-                                : item
-                            )
-                          )
-                        }
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer ${
-                          inv.status === "Available"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : inv.status === "Low Stock"
-                            ? "bg-amber-100 text-amber-900"
-                            : "bg-rose-100 text-rose-800"
-                        }`}
-                      >
-                        {inv.status} (Cycle)
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 10. HR & STAFF LOG DESK */}
-          {roleTab === "hr" && (
-            <div className="grid lg:grid-cols-12 gap-6 items-start">
-              <form
-                onSubmit={handleAddHrStaff}
-                className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
-              >
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  FACULTY, SUPPORT & GATE STAFF
-                </span>
-                <h2 className="text-lg font-black text-slate-900">+ Add Staff Record</h2>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Staff Full Name</label>
-                  <input
-                    required
-                    type="text"
-                    value={hrName}
-                    onChange={(e) => setHrName(e.target.value)}
-                    placeholder="e.g. Mr. Deepak Pawar"
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Designation / Role</label>
-                  <input
-                    required
-                    type="text"
-                    value={hrRoleTitle}
-                    onChange={(e) => setHrRoleTitle(e.target.value)}
-                    placeholder="e.g. Lab Assistant / Clerk"
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Wing</label>
-                    <select
-                      value={hrWing}
-                      onChange={(e) => setHrWing(e.target.value as Wing)}
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="School">School</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Polytechnic">Polytechnic</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Mobile No.</label>
-                    <input
-                      type="tel"
-                      value={hrPhone}
-                      onChange={(e) => setHrPhone(e.target.value)}
-                      placeholder="98230XXXXX"
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Shift Timing</label>
-                  <input
-                    type="text"
-                    value={hrShift}
-                    onChange={(e) => setHrShift(e.target.value)}
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
-                >
-                  Add to HR & Staff Log
-                </button>
-              </form>
-
-              <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                  <h2 className="font-black text-base text-slate-900">
-                    HR & Staff Attendance Log ({visibleHrStaff.length})
-                  </h2>
-                  <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {visibleHrStaff.map((st) => (
-                    <div
-                      key={st.id}
-                      className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50/70"
-                    >
-                      <div className="space-y-0.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-indigo-600">{st.id}</span>
-                          <span className="font-extrabold text-slate-900">{st.name}</span>
-                          <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">
-                            {st.wing}
-                          </span>
-                        </div>
-                        <p className="text-xs font-semibold text-slate-700">{st.roleTitle}</p>
-                        <p className="text-xs text-slate-500">
-                          Shift: {st.shift} • Phone: {st.phone}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setHrStaffList((prev) =>
-                            prev.map((item) =>
-                              item.id === st.id
-                                ? {
-                                    ...item,
-                                    status:
-                                      item.status === "On Duty"
-                                        ? "On Leave"
-                                        : item.status === "On Leave"
-                                        ? "Shift Completed"
-                                        : "On Duty",
-                                  }
-                                : item
-                            )
-                          )
-                        }
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer ${
-                          st.status === "On Duty"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : st.status === "On Leave"
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-slate-200 text-slate-800"
-                        }`}
-                      >
-                        {st.status}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 11. NOTIFICATIONS DESK */}
-          {roleTab === "notifications" && (
-            <div className="grid lg:grid-cols-12 gap-6 items-start">
-              <form
-                onSubmit={handleAddNotification}
-                className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5"
-              >
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  CAMPUS ALERTS & CIRCULARS
-                </span>
-                <h2 className="text-lg font-black text-slate-900">+ Post New Notification</h2>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Alert Title</label>
-                  <input
-                    required
-                    type="text"
-                    value={notTitle}
-                    onChange={(e) => setNotTitle(e.target.value)}
-                    placeholder="e.g. Lab Practical Schedule Updated"
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700">Wing</label>
-                    <select
-                      value={notWing}
-                      onChange={(e) => setNotWing(e.target.value as Wing | "All")}
-                      className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="All">All Wings</option>
-                      <option value="School">School</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Polytechnic">Polytechnic</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700">Audience</label>
-                    <select
-                      value={notAudience}
-                      onChange={(e) =>
-                        setNotAudience(e.target.value as CampusNotification["audience"])
-                      }
-                      className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="All">All</option>
-                      <option value="Students">Students</option>
-                      <option value="Parents">Parents</option>
-                      <option value="Faculty & Staff">Faculty & Staff</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700">Type</label>
-                    <select
-                      value={notCategory}
-                      onChange={(e) =>
-                        setNotCategory(e.target.value as CampusNotification["category"])
-                      }
-                      className="w-full mt-1 px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-                    >
-                      <option value="Fee Alert">Fee Alert</option>
-                      <option value="Attendance">Attendance</option>
-                      <option value="Exam & Q-Bank">Exam & Q-Bank</option>
-                      <option value="Operations">Operations</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Message</label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={notMessage}
-                    onChange={(e) => setNotMessage(e.target.value)}
-                    placeholder="Enter notice details..."
-                    className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
-                >
-                  Publish Notification
-                </button>
-              </form>
-
-              <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                  <h2 className="font-black text-base text-slate-900">
-                    Active Notifications & Alerts ({visibleNotifications.length})
-                  </h2>
-                  <span className="text-xs font-semibold text-slate-500">Wing: {wingFilter}</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {visibleNotifications.map((nt) => (
-                    <div key={nt.id} className="px-6 py-4 space-y-1 hover:bg-slate-50/70">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-extrabold">
-                            {nt.category}
-                          </span>
-                          <span className="text-xs font-bold text-indigo-700">
-                            {nt.wing} • For: {nt.audience}
-                          </span>
-                        </div>
-                        <span className="text-[11px] text-slate-400 font-semibold">
-                          {nt.dateLabel}
-                        </span>
-                      </div>
-                      <p className="font-extrabold text-slate-900 text-sm">{nt.title}</p>
-                      <p className="text-xs text-slate-600 leading-relaxed">{nt.message}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
-      {/* COORDINATOR QUESTION EDIT MODAL */}
+      {/* =====================================================================
+          COORDINATOR EDIT QUESTION MODAL
+      ===================================================================== */}
       {editingQuestion && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4 print:hidden">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleSaveEditedQuestion}
-            className="bg-white text-slate-900 rounded-3xl max-w-lg w-full p-7 shadow-2xl border border-slate-200 space-y-4"
+            className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-slate-200"
           >
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  COORDINATOR PAPER EDITOR • {editingQuestion.id}
+                  COORDINATOR QUESTION EDITOR
                 </p>
-                <h3 className="text-lg font-black text-slate-900">Edit Question Details</h3>
+                <h3 className="text-lg font-black text-slate-900">
+                  Edit Question • {editingQuestion.id}
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingQuestion(null)}
-                className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black cursor-pointer"
               >
                 ✕
               </button>
@@ -5583,19 +5948,14 @@ export default function JMCTCampusERP() {
                 <label className="text-xs font-bold text-slate-700">Wing</label>
                 <select
                   value={editingQuestion.wing}
-                  onChange={(e) => {
-                    const nextWing = e.target.value as Wing;
-                    setEditingQuestion({
-                      ...editingQuestion,
-                      wing: nextWing,
-                      className: WING_COURSES[nextWing][0],
-                    });
-                  }}
+                  onChange={(e) =>
+                    setEditingQuestion({ ...editingQuestion, wing: e.target.value as Wing })
+                  }
                   className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
                 >
-                  <option value="School">School (CBSE)</option>
-                  <option value="Pharmacy">Pharmacy (PCI)</option>
-                  <option value="Polytechnic">Polytechnic (MSBTE)</option>
+                  <option value="School">School</option>
+                  <option value="Pharmacy">Pharmacy</option>
+                  <option value="Polytechnic">Polytechnic</option>
                 </select>
               </div>
               <div>
@@ -5618,19 +5978,15 @@ export default function JMCTCampusERP() {
 
             <div>
               <label className="text-xs font-bold text-slate-700">Class / Course</label>
-              <select
+              <input
+                required
+                type="text"
                 value={editingQuestion.className}
                 onChange={(e) =>
                   setEditingQuestion({ ...editingQuestion, className: e.target.value })
                 }
                 className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
-              >
-                {WING_COURSES[editingQuestion.wing].map((cls) => (
-                  <option key={cls} value={cls}>
-                    {cls}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div className="grid grid-cols-3 gap-3">
@@ -5676,61 +6032,89 @@ export default function JMCTCampusERP() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Question Text</label>
+              <label className="text-xs font-bold text-slate-700">Question Statement</label>
               <textarea
                 required
-                rows={4}
+                rows={3}
                 value={editingQuestion.questionText}
                 onChange={(e) =>
                   setEditingQuestion({ ...editingQuestion, questionText: e.target.value })
                 }
-                className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium"
+                className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
               />
             </div>
 
-            <div className="flex gap-2.5 pt-1">
-              <button
-                type="submit"
-                className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs cursor-pointer"
-              >
-                Save Changes
-              </button>
+            <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setEditingQuestion(null)}
-                className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer"
               >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black cursor-pointer"
+              >
+                Save Changes
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* ROLE LOGIN MODAL */}
+      {/* =====================================================================
+          ROLE LOGIN MODAL (TEACHER, PEON, GUARD, COORDINATOR, ADMIN, PARENT, STUDENT)
+      ===================================================================== */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4 print:hidden">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleLoginSubmit}
-            className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 space-y-4"
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200"
           >
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  JMCT CAMPUS • ROLE AUTHENTICATION
+                  ROLE-SPECIFIC CAMPUS LOGIN
                 </p>
-                <h3 className="text-xl font-black text-slate-900">Sign In to Campus Desk</h3>
+                <h3 className="text-lg font-black text-slate-900">
+                  {ROLE_CREDENTIALS[loginRole].title}
+                </h3>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setShowLoginModal(false);
-                  setLoginError("");
-                }}
-                className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer"
+                onClick={() => setShowLoginModal(false)}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black cursor-pointer"
               >
                 ✕
               </button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {(
+                [
+                  ["teacher", "Teacher"],
+                  ["peon", "Peon"],
+                  ["guard", "Guard"],
+                  ["coordinator", "Coordinator"],
+                  ["admin", "Admin"],
+                  ["parent", "Parent"],
+                  ["student", "Student"],
+                ] as const
+              ).map(([rKey, rLabel]) => (
+                <button
+                  key={rKey}
+                  type="button"
+                  onClick={() => handleLoginRoleChange(rKey)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold cursor-pointer transition ${
+                    loginRole === rKey
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {rLabel}
+                </button>
+              ))}
             </div>
 
             {loginError && (
@@ -5740,88 +6124,60 @@ export default function JMCTCampusERP() {
             )}
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Select Account Role</label>
-              <select
-                value={loginRole}
-                onChange={(e) => handleLoginRoleChange(e.target.value as AccountRole)}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-extrabold text-slate-900"
-              >
-                <option value="student">Student Portal</option>
-                <option value="parent">Parent Desk</option>
-                <option value="teacher">Teacher (Attendance & Q-Upload)</option>
-                <option value="coordinator">Coordinator (Question Bank Access)</option>
-                <option value="admin">Admin Desk (Admissions & Fees)</option>
-                <option value="peon">Peon / Support Duty</option>
-                <option value="guard">Security Gate Pass</option>
-              </select>
-            </div>
-
-            <div>
               <label className="text-xs font-bold text-slate-700">
-                {loginRole === "student" || loginRole === "parent"
-                  ? "Student Roll ID"
-                  : "Institutional Email / Staff ID"}
+                {ROLE_CREDENTIALS[loginRole].idLabel}
               </label>
               <input
                 required
                 type="text"
                 value={loginIdentifier}
                 onChange={(e) => setLoginIdentifier(e.target.value)}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
               />
             </div>
 
-            {loginRole === "coordinator" ? (
-              <div>
-                <label className="text-xs font-bold text-slate-700">
-                  Coordinator Permission Code
-                </label>
-                <input
-                  required
-                  type="password"
-                  value={loginCoordCode}
-                  onChange={(e) => setLoginCoordCode(e.target.value)}
-                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="text-xs font-bold text-slate-700">Password</label>
-                <input
-                  required
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
-                />
-              </div>
-            )}
+            <div>
+              <label className="text-xs font-bold text-slate-700">
+                {loginRole === "coordinator" ? "Coordinator Passcode" : "Password"}
+              </label>
+              <input
+                required
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
+              />
+            </div>
 
             <button
               type="submit"
               className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
             >
-              Continue to Desk →
+              Sign In to {ROLE_CREDENTIALS[loginRole].title} →
             </button>
           </form>
         </div>
       )}
 
-      {/* ONLINE FEE PAYMENT MODAL */}
+      {/* =====================================================================
+          ONLINE FEE PAYMENT MODAL
+      ===================================================================== */}
       {payingStudent && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4 print:hidden">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handlePayFormSubmit}
-            className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 space-y-4"
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200"
           >
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                <p className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600">
                   JMCT ONLINE FEE GATEWAY
                 </p>
-                <h3 className="text-xl font-black text-slate-900">{payingStudent.name}</h3>
+                <h3 className="text-lg font-black text-slate-900">
+                  Pay Fee • {payingStudent.name}
+                </h3>
                 <p className="text-xs text-slate-500">
-                  {payingStudent.id} • {payingStudent.wing} • Due:{" "}
+                  {payingStudent.id} • {payingStudent.wing} • Balance Due:{" "}
                   <strong className="text-rose-600 tabular-nums">
                     ₹{modalDue.toLocaleString("en-IN")}
                   </strong>
@@ -5830,23 +6186,11 @@ export default function JMCTCampusERP() {
               <button
                 type="button"
                 onClick={() => setPayingStudent(null)}
-                className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black cursor-pointer"
               >
                 ✕
               </button>
             </div>
-
-            {payError && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
-                ⚠ {payError}
-              </div>
-            )}
-
-            {paymentConfirmed && (
-              <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-bold">
-                Do you confirm the fee payment of ₹{Number(payAmount || 0).toLocaleString("en-IN")} via {payMethod}? Click “Confirm & Pay Now” again.
-              </div>
-            )}
 
             <div>
               <label className="text-xs font-bold text-slate-700">Payment Amount (₹)</label>
@@ -5856,52 +6200,42 @@ export default function JMCTCampusERP() {
                 min={1}
                 max={modalDue}
                 value={payAmount}
-                onChange={(e) => {
-                  setPayAmount(e.target.value);
-                  setPayError("");
-                  setPaymentConfirmed(false);
-                }}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-black tabular-nums"
+                onChange={(e) => setPayAmount(e.target.value)}
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-base font-black text-slate-900 tabular-nums"
               />
               <div className="flex gap-2 mt-2">
-                {[5000, 10000, modalDue].map((amt, idx) =>
-                  amt > 0 ? (
+                {[5000, 15000, modalDue]
+                  .filter((amt, idx, arr) => amt > 0 && arr.indexOf(amt) === idx)
+                  .map((amt) => (
                     <button
-                      key={`${amt}-${idx}`}
+                      key={amt}
                       type="button"
-                      onClick={() => {
-                        setPayAmount(String(amt));
-                        setPayError("");
-                        setPaymentConfirmed(false);
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 cursor-pointer tabular-nums"
+                      onClick={() => setPayAmount(String(Math.min(amt, modalDue)))}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 text-[11px] font-extrabold cursor-pointer tabular-nums"
                     >
-                      {amt === modalDue ? `Full Due (₹${amt.toLocaleString("en-IN")})` : `₹${amt.toLocaleString("en-IN")}`}
+                      {amt === modalDue
+                        ? `Full Due (₹${amt.toLocaleString("en-IN")})`
+                        : `₹${amt.toLocaleString("en-IN")}`}
                     </button>
-                  ) : null
-                )}
+                  ))}
               </div>
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-700">Payment Method</label>
-              <div className="grid grid-cols-3 gap-2 mt-1.5">
+              <div className="grid grid-cols-3 gap-2 mt-1">
                 {(["UPI", "Card", "NetBanking"] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
-                    onClick={() => {
-                      setPayMethod(m);
-                      setPayError("");
-                      setPaymentConfirmed(false);
-                    }}
-                    className={`py-2 rounded-xl text-xs font-extrabold border cursor-pointer ${
+                    onClick={() => setPayMethod(m)}
+                    className={`py-2 rounded-xl text-xs font-extrabold border cursor-pointer transition ${
                       payMethod === m
                         ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-slate-50 text-slate-700 border-slate-200"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                     }`}
                   >
-                    {m}
+                    {m === "NetBanking" ? "Net Banking" : m}
                   </button>
                 ))}
               </div>
@@ -5911,118 +6245,94 @@ export default function JMCTCampusERP() {
               <div>
                 <label className="text-xs font-bold text-slate-700">UPI ID</label>
                 <input
-                  required
                   type="text"
                   value={upiId}
-                  onChange={(e) => {
-                    setUpiId(e.target.value);
-                    setPayError("");
-                    setPaymentConfirmed(false);
-                  }}
+                  onChange={(e) => setUpiId(e.target.value)}
                   placeholder="name@upi"
-                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
+                  className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
                 />
+              </div>
+            )}
+
+            {payError && (
+              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
+                ⚠ {payError}
               </div>
             )}
 
             <button
               type="submit"
               disabled={isProcessingPay}
-              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm cursor-pointer disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm cursor-pointer disabled:opacity-60 transition tabular-nums"
             >
               {isProcessingPay
                 ? "Processing Payment..."
-                : `Confirm & Pay ₹${Number(payAmount || 0).toLocaleString("en-IN")}`}
+                : paymentConfirmed
+                ? `Confirm & Pay ₹${(Number(payAmount) || 0).toLocaleString("en-IN")} Now`
+                : `Proceed to Pay ₹${(Number(payAmount) || 0).toLocaleString("en-IN")} via ${payMethod}`}
             </button>
           </form>
         </div>
       )}
 
-      {/* OFFICIAL FEE RECEIPT MODAL */}
+      {/* =====================================================================
+          PRINTABLE FEE RECEIPT MODAL
+      ===================================================================== */}
       {receiptStudent && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl space-y-5">
-            <div className="flex justify-between items-start border-b border-dashed border-slate-300 pb-4">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600">
-                  JMCT GROUP OF INSTITUTIONS • NASHIK
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 print:bg-white print:p-0 print:static">
+          <div className="bg-white rounded-3xl max-w-md w-full p-7 shadow-2xl space-y-5 border border-slate-200 print:shadow-none print:border-none">
+            <div className="text-center border-b border-dashed border-slate-300 pb-4">
+              <p className="text-[11px] font-black uppercase tracking-widest text-indigo-600">
+                JMCT GROUP OF INSTITUTIONS • NASHIK
+              </p>
+              <h3 className="text-xl font-black text-slate-900 mt-0.5">Official Fee Receipt</h3>
+              <p className="text-xs text-slate-500">{receiptStudent.wing} Wing • Session 2026–27</p>
+              {lastPaymentMeta && lastPaymentMeta.studentId === receiptStudent.id && (
+                <p className="text-[11px] font-mono font-bold text-emerald-700 mt-1">
+                  Txn: {lastPaymentMeta.txnId} • {lastPaymentMeta.method}
                 </p>
-                <h3 className="text-xl font-black mt-0.5">Official Fee Receipt</h3>
-                <p className="text-xs text-slate-500">
-                  {receiptStudent.wing} Wing • {receiptStudent.course}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setReceiptStudent(null);
-                  setLastPaymentMeta(null);
-                }}
-                className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer print:hidden"
-              >
-                ✕
-              </button>
+              )}
             </div>
-
-            {lastPaymentMeta && lastPaymentMeta.studentId === receiptStudent.id && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-0.5">
-                <p className="font-black">✓ Latest Online Payment Verified</p>
-                <p className="font-mono text-[11px]">Txn ID: {lastPaymentMeta.txnId}</p>
-                <p className="text-[11px]">
-                  Paid ₹{lastPaymentMeta.amount.toLocaleString("en-IN")} via{" "}
-                  <strong>{lastPaymentMeta.method}</strong> ({lastPaymentMeta.paidAt})
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-2.5 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Student Name</span>
-                <span className="font-bold">{receiptStudent.name}</span>
-              </div>
+            <div className="space-y-2.5 text-sm tabular-nums">
               <div className="flex justify-between">
                 <span className="text-slate-500">Roll ID</span>
-                <span className="font-mono font-bold text-indigo-600">{receiptStudent.id}</span>
+                <span className="font-mono font-bold text-indigo-700">{receiptStudent.id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Total Annual Fee</span>
-                <span className="font-bold tabular-nums">
-                  ₹{receiptStudent.totalFee.toLocaleString("en-IN")}
-                </span>
+                <span className="text-slate-500">Student Name</span>
+                <span className="font-extrabold text-slate-900">{receiptStudent.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Total Paid</span>
-                <span className="font-bold text-emerald-700 tabular-nums">
-                  ₹{receiptStudent.paidFee.toLocaleString("en-IN")}
-                </span>
+                <span className="text-slate-500">Course</span>
+                <span className="font-semibold text-slate-800">{receiptStudent.course}</span>
               </div>
-              <div className="flex justify-between border-t border-slate-200 pt-2.5 text-base">
-                <span className="font-black">Balance Due</span>
-                <span className="font-black text-rose-600 tabular-nums">
-                  ₹
-                  {Math.max(
-                    0,
-                    receiptStudent.totalFee - receiptStudent.paidFee
-                  ).toLocaleString("en-IN")}
+              <div className="flex justify-between">
+                <span className="text-slate-500">Annual Fee</span>
+                <span className="font-bold">₹{receiptStudent.totalFee.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="flex justify-between text-emerald-700 font-extrabold">
+                <span>Total Paid</span>
+                <span>₹{receiptStudent.paidFee.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="flex justify-between text-rose-600 font-extrabold border-t border-slate-200 pt-2.5 text-base">
+                <span>Balance Due</span>
+                <span>
+                  ₹{Math.max(0, receiptStudent.totalFee - receiptStudent.paidFee).toLocaleString("en-IN")}
                 </span>
               </div>
             </div>
-
-            <div className="flex gap-2.5 pt-2 print:hidden">
+            <div className="flex gap-2 pt-2 print:hidden">
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-extrabold text-xs cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs cursor-pointer"
               >
                 Print / Save PDF
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setReceiptStudent(null);
-                  setLastPaymentMeta(null);
-                }}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 font-bold text-xs cursor-pointer"
+                onClick={() => setReceiptStudent(null)}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs cursor-pointer"
               >
                 Close
               </button>
