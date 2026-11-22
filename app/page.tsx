@@ -186,6 +186,30 @@ const QUICK_CIRCLES: {
   { label: "Question Bank", sub: "Q-Bank", mode: "erp", tab: "qbank" },
 ];
 
+const JOURNEY_STEPS = [
+  {
+    step: "01",
+    title: "Home & Dedicated Portals",
+    desc: "Har role ke liye alag rasta — Student Login, Fee System, SIS Directory aur Staff & ERP ek jagah mix nahi hote.",
+    actionLabel: "Open Student Login",
+    mode: "student" as PortalMode,
+  },
+  {
+    step: "02",
+    title: "Live Attendance & Fee Desk",
+    desc: "75% attendance benchmark ke saath real-time roll call, UPI/Card/NetBanking fee payment aur instant PDF receipt.",
+    actionLabel: "Open Fee System",
+    mode: "fees" as PortalMode,
+  },
+  {
+    step: "03",
+    title: "SIS Records & Staff Workflow",
+    desc: "Wing-wise student directory (SIS) aur teachers, coordinators, peon duty, gate pass, labs, HR aur alerts ka structured flow.",
+    actionLabel: "Open SIS Directory",
+    mode: "sis" as PortalMode,
+  },
+];
+
 const NEWS_AND_EVENTS = [
   {
     date: "NOV 2026",
@@ -1843,37 +1867,37 @@ export default function JMCTCampusERP() {
         view === "portal" ? "bg-[#F8FAFC] text-slate-900" : "bg-[#F1F5F9] text-slate-900"
       }`}
     >
-      {/* Top Navbar with Dedicated Portal Switchers */}
+      {/* Top Navbar with Single-Row Mobile Scroll & Dedicated Portal Switchers */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs print:hidden">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <div
             onClick={() => openMode("portal")}
-            className="flex items-center gap-3 cursor-pointer shrink-0"
+            className="flex items-center gap-2.5 cursor-pointer shrink-0"
           >
             <div className="w-9 h-9 rounded-lg bg-[#0F294A] flex items-center justify-center text-amber-400 font-black text-base shadow-xs">
               J
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-black text-base tracking-tight text-slate-900">
+            <div className="flex items-center gap-1.5">
+              <span className="font-black text-sm sm:text-base tracking-tight text-slate-900 whitespace-nowrap">
                 JMCT Campus
               </span>
               <span
-                className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wide ${
+                className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wide whitespace-nowrap ${
                   dbStatus === "live"
                     ? "bg-emerald-500/15 text-emerald-700"
                     : "bg-amber-500/15 text-amber-800"
                 }`}
               >
-                {dbStatus === "live" ? "● LIVE DB" : "● READY"}
+                {dbStatus === "live" ? "● LIVE" : "● READY"}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+          <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto py-1">
             <button
               type="button"
               onClick={() => openMode("portal")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
                 view === "portal"
                   ? "bg-[#0F294A] text-white"
                   : "bg-slate-100 hover:bg-slate-200 text-slate-800"
@@ -1884,7 +1908,7 @@ export default function JMCTCampusERP() {
             <button
               type="button"
               onClick={() => openMode("student")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
                 view === "student"
                   ? "bg-amber-400 text-slate-950 shadow-2xs"
                   : "bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200"
@@ -1895,7 +1919,7 @@ export default function JMCTCampusERP() {
             <button
               type="button"
               onClick={() => openMode("fees")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
                 view === "fees"
                   ? "bg-emerald-600 text-white shadow-2xs"
                   : "bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200"
@@ -1906,7 +1930,7 @@ export default function JMCTCampusERP() {
             <button
               type="button"
               onClick={() => openMode("sis")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
                 view === "sis"
                   ? "bg-sky-700 text-white shadow-2xs"
                   : "bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-200"
@@ -1917,7 +1941,7 @@ export default function JMCTCampusERP() {
             <button
               type="button"
               onClick={() => openMode("erp", "admin")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer transition ${
                 view === "erp"
                   ? "bg-indigo-600 text-white shadow-2xs"
                   : "bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200"
@@ -1927,14 +1951,14 @@ export default function JMCTCampusERP() {
             </button>
 
             {authUser ? (
-              <div className="flex items-center gap-1.5 pl-1">
-                <span className="hidden sm:inline px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-extrabold">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="hidden md:inline whitespace-nowrap px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-extrabold">
                   {authUser.label}
                 </span>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold cursor-pointer transition"
+                  className="shrink-0 whitespace-nowrap px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold cursor-pointer transition"
                 >
                   Logout
                 </button>
@@ -1943,7 +1967,7 @@ export default function JMCTCampusERP() {
               <button
                 type="button"
                 onClick={() => setShowLoginModal(true)}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-200 cursor-pointer transition"
+                className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-200 cursor-pointer transition"
               >
                 Role Login
               </button>
@@ -2559,7 +2583,7 @@ export default function JMCTCampusERP() {
       )}
 
       {/* =====================================================================
-          4. HOME PAGE VIEW (FIRST PAGE ON VISIT)
+          4. HOME PAGE VIEW (ORDERED PRESENTATION FLOW ON VISIT)
       ===================================================================== */}
       {view === "portal" && (
         <>
@@ -2573,9 +2597,8 @@ export default function JMCTCampusERP() {
                   School (CBSE), Pharmacy (PCI) & Polytechnic (MSBTE)
                 </h1>
                 <p className="text-sm sm:text-base text-slate-200 max-w-2xl leading-relaxed">
-                  Har system ka alag desk: Student Login & Portal, Fee System, SIS Directory,
-                  Admissions, Attendance, Timetable, Homework, Inventory, HR, Question Bank, Peon
-                  Duty aur Gate Pass.
+                  Ek saaf tartib mein bane alag-alag portals: Student Login & Portal, Fee System,
+                  SIS Directory aur Staff & ERP — har kaam apni jagah, bina kisi khichdi ke.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-1">
                   <button
@@ -2690,6 +2713,47 @@ export default function JMCTCampusERP() {
             </div>
           </section>
 
+          {/* Step-by-Step Guided Tartib (01 -> 02 -> 03) */}
+          <section className="max-w-7xl mx-auto px-6 py-10 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-700">
+                  STEP-BY-STEP CAMPUS FLOW
+                </p>
+                <h2 className="text-2xl font-black text-slate-900 mt-0.5">
+                  Tartib se har system kaise kaam karta hai
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 font-semibold">
+                Step 01 Portals • Step 02 Attendance & Fees • Step 03 SIS & Operations
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-5">
+              {JOURNEY_STEPS.map((item) => (
+                <div
+                  key={item.step}
+                  className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-2.5">
+                    <span className="inline-block px-2.5 py-1 rounded-lg bg-[#0F294A] text-amber-300 text-xs font-black tabular-nums">
+                      STEP {item.step}
+                    </span>
+                    <h3 className="text-lg font-black text-slate-900">{item.title}</h3>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openMode(item.mode)}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-indigo-700 text-white text-xs font-extrabold cursor-pointer transition"
+                  >
+                    {item.actionLabel} →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="bg-[#181B20] text-white py-12">
             <div className="max-w-7xl mx-auto px-6 space-y-10">
               <div className="text-center space-y-4">
@@ -2727,15 +2791,15 @@ export default function JMCTCampusERP() {
                   <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
                     {NEWS_AND_EVENTS[0].summary}
                   </p>
-                  <div className="pt-2 flex items-center justify-between">
+                  <div className="pt-2 flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => openMode("erp", "qbank")}
-                      className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer"
+                      className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold cursor-pointer shrink-0"
                     >
                       Question Bank
                     </button>
-                    <span className="text-xs text-blue-200 font-semibold">
+                    <span className="text-xs text-blue-200 font-semibold truncate">
                       {NEWS_AND_EVENTS[1].title}
                     </span>
                   </div>
@@ -5612,50 +5676,50 @@ export default function JMCTCampusERP() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Question Text</label>
+              <label className="text-xs font-bold text-slate-700">Question Statement</label>
               <textarea
                 required
-                rows={4}
+                rows={3}
                 value={editingQuestion.questionText}
                 onChange={(e) =>
                   setEditingQuestion({ ...editingQuestion, questionText: e.target.value })
                 }
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm"
+                className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm"
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex gap-2.5 pt-1">
+              <button
+                type="submit"
+                className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs cursor-pointer"
+              >
+                Save Changes
+              </button>
               <button
                 type="button"
                 onClick={() => setEditingQuestion(null)}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-extrabold cursor-pointer"
+                className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs cursor-pointer"
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black cursor-pointer"
-              >
-                Save Question Changes
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* PORTAL LOGIN MODAL */}
+      {/* ROLE LOGIN MODAL */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4 print:hidden">
           <form
             onSubmit={handleLoginSubmit}
-            className="bg-white text-slate-900 rounded-3xl max-w-sm w-full p-7 shadow-2xl border border-slate-200 space-y-4"
+            className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 space-y-4"
           >
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
-                <h3 className="text-xl font-black text-slate-900">JMCT Role Login</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Apna role chunein aur dedicated portal/desk kholein
+                <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
+                  JMCT ERP • ROLE ACCESS
                 </p>
+                <h3 className="text-xl font-black text-slate-900">Sign In to Workspace</h3>
               </div>
               <button
                 type="button"
@@ -5673,72 +5737,66 @@ export default function JMCTCampusERP() {
             )}
 
             <div>
-              <label className="text-[11px] font-extrabold uppercase text-slate-500">
-                Account Role
-              </label>
+              <label className="text-xs font-bold text-slate-700">Select Role</label>
               <select
                 value={loginRole}
                 onChange={(e) => handleLoginRoleChange(e.target.value as AccountRole)}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold bg-slate-50"
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-extrabold text-slate-900"
               >
-                <option value="student">Student (Dedicated Student Portal)</option>
-                <option value="parent">Parent (Ward Status & Fee Pay)</option>
-                <option value="admin">Admin (Admissions & ERP)</option>
-                <option value="teacher">Teacher (Attendance & Q-Upload)</option>
-                <option value="coordinator">Coordinator (Question Bank Permission)</option>
-                <option value="peon">Peon / Support Staff (Duty Roster)</option>
-                <option value="guard">Security Guard (Gate Pass)</option>
+                <option value="student">Student Portal (Roll ID)</option>
+                <option value="parent">Parent Desk (Ward ID)</option>
+                <option value="teacher">Teacher / Faculty Desk</option>
+                <option value="coordinator">Coordinator (Question Bank)</option>
+                <option value="peon">Peon / Support Staff</option>
+                <option value="guard">Security / Gate Pass</option>
+                <option value="admin">Admin / Accounts Desk</option>
               </select>
             </div>
 
             <div>
-              <label className="text-[11px] font-extrabold uppercase text-slate-500">
+              <label className="text-xs font-bold text-slate-700">
                 {loginRole === "student" || loginRole === "parent"
                   ? "Student Roll ID"
-                  : "Institutional Email / ID"}
+                  : "Official Email / Staff ID"}
               </label>
               <input
                 required
                 type="text"
                 value={loginIdentifier}
                 onChange={(e) => setLoginIdentifier(e.target.value)}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
               />
             </div>
 
             {loginRole === "coordinator" ? (
               <div>
-                <label className="text-[11px] font-extrabold uppercase text-slate-500">
-                  Coordinator Permission Code
-                </label>
+                <label className="text-xs font-bold text-slate-700">Coordinator Passcode</label>
                 <input
                   required
                   type="password"
                   value={loginCoordCode}
                   onChange={(e) => setLoginCoordCode(e.target.value)}
-                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold"
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold"
                 />
               </div>
             ) : (
               <div>
-                <label className="text-[11px] font-extrabold uppercase text-slate-500">
-                  Password
-                </label>
+                <label className="text-xs font-bold text-slate-700">Password</label>
                 <input
                   required
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold"
                 />
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm cursor-pointer"
+              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm cursor-pointer transition"
             >
-              Sign In to Role Workspace →
+              Continue to Desk →
             </button>
           </form>
         </div>
@@ -5754,12 +5812,9 @@ export default function JMCTCampusERP() {
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  JMCT FEE GATEWAY • {payingStudent.id}
+                  JMCT FEE GATEWAY • INSTANT RECEIPT
                 </p>
                 <h3 className="text-xl font-black text-slate-900">Pay Student Fee Online</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {payingStudent.name} • {payingStudent.wing} ({payingStudent.course})
-                </p>
               </div>
               <button
                 type="button"
@@ -5774,15 +5829,37 @@ export default function JMCTCampusERP() {
               </button>
             </div>
 
-            <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3.5 flex justify-between items-center text-xs">
-              <span className="font-bold text-slate-600">Pending Fee Balance:</span>
-              <span className="text-base font-black text-rose-600 tabular-nums">
-                ₹{modalDue.toLocaleString("en-IN")}
-              </span>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-semibold">Student:</span>
+                <span className="font-extrabold text-slate-900">
+                  {payingStudent.name} ({payingStudent.id})
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-semibold">Wing & Course:</span>
+                <span className="font-bold text-slate-700">
+                  {payingStudent.wing} • {payingStudent.course}
+                </span>
+              </div>
+              <div className="flex justify-between pt-1 border-t border-slate-200/70">
+                <span className="text-slate-600 font-bold">Pending Due:</span>
+                <span className="font-black text-rose-600 tabular-nums">
+                  ₹{modalDue.toLocaleString("en-IN")}
+                </span>
+              </div>
             </div>
 
+            {payError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
+                ⚠ {payError}
+              </div>
+            )}
+
             <div>
-              <label className="text-xs font-bold text-slate-700">Payment Amount (₹)</label>
+              <label className="text-xs font-bold text-slate-700">
+                Payment Amount (₹) — Max ₹{modalDue.toLocaleString("en-IN")}
+              </label>
               <input
                 required
                 type="number"
@@ -5793,7 +5870,7 @@ export default function JMCTCampusERP() {
                   setPayAmount(e.target.value);
                   setPayError("");
                 }}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-sm font-black tabular-nums"
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-base font-black tabular-nums focus:bg-white focus:border-indigo-500 outline-none"
               />
             </div>
 
@@ -5832,141 +5909,132 @@ export default function JMCTCampusERP() {
                     setPayError("");
                   }}
                   placeholder="name@upi"
-                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-sm font-semibold"
+                  className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none"
                 />
               </div>
             )}
 
-            {payError && (
-              <p className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
-                {payError}
-              </p>
-            )}
-
             {paymentConfirmed && (
-              <div className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded-xl px-3.5 py-2.5 space-y-2">
-                <p>
-                  Kya aap ₹{Number(payAmount).toLocaleString("en-IN")} ({payMethod}) ka payment
-                  confirm karna chahte hain?
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-black cursor-pointer"
-                  >
-                    Haan, Confirm karo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentConfirmed(false)}
-                    className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-bold cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-bold">
+                Kya aap ₹{Number(payAmount || 0).toLocaleString("en-IN")} ({payMethod}) ka fee
+                payment confirm karte hain? Dobara &ldquo;Confirm &amp; Pay Now&rdquo; dabayein.
               </div>
             )}
 
-            {!paymentConfirmed && (
+            <div className="flex gap-2.5 pt-2">
               <button
                 type="submit"
                 disabled={isProcessingPay}
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm cursor-pointer transition disabled:opacity-60 tabular-nums"
+                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs cursor-pointer transition disabled:opacity-60"
               >
                 {isProcessingPay
                   ? "Processing Payment..."
-                  : `Pay ₹${(Number(payAmount) || 0).toLocaleString("en-IN")} & Generate Receipt`}
+                  : paymentConfirmed
+                  ? `Confirm & Pay ₹${Number(payAmount || 0).toLocaleString("en-IN")}`
+                  : `Pay ₹${Number(payAmount || 0).toLocaleString("en-IN")} Now`}
               </button>
-            )}
+              <button
+                type="button"
+                onClick={() => {
+                  setPayingStudent(null);
+                  setPayError("");
+                  setPaymentConfirmed(false);
+                }}
+                className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
           </form>
         </div>
       )}
 
       {/* PRINTABLE FEE RECEIPT MODAL */}
       {receiptStudent && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 flex items-center justify-center p-4 print:static print:bg-white print:p-0">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 print:shadow-none print:border-none print:max-w-none print:rounded-none">
-            <div className="flex justify-between items-start border-b border-slate-200 pb-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4">
+          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex justify-between items-start border-b border-dashed border-slate-300 pb-4">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">
-                  JMCT GROUP OF INSTITUTIONS, NASHIK
+                  OFFICIAL FEE RECEIPT • NASHIK
                 </p>
-                <h3 className="text-xl font-black text-slate-900">Official Fee Receipt</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {receiptStudent.wing} • {receiptStudent.course}
+                <h3 className="text-xl font-black text-slate-900">JMCT Campus ERP</h3>
+                <p className="text-xs text-slate-500">
+                  {receiptStudent.wing} Wing • {receiptStudent.course}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setReceiptStudent(null)}
-                className="text-slate-400 hover:text-slate-900 font-bold cursor-pointer print:hidden"
+                onClick={() => {
+                  setReceiptStudent(null);
+                  setLastPaymentMeta(null);
+                }}
+                className="text-slate-400 hover:text-slate-900 font-bold print:hidden cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             {lastPaymentMeta && lastPaymentMeta.studentId === receiptStudent.id && (
-              <div className="mt-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-0.5">
-                <p className="font-black">✓ Latest Online Payment Recorded</p>
-                <p className="font-mono text-[11px]">
-                  Txn ID: {lastPaymentMeta.txnId} • {lastPaymentMeta.method}
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-0.5">
+                <p className="font-black">✓ Online Payment Recorded</p>
+                <p className="font-mono text-[11px]">Txn ID: {lastPaymentMeta.txnId}</p>
+                <p className="text-[11px]">
+                  Paid ₹{lastPaymentMeta.amount.toLocaleString("en-IN")} via{" "}
+                  {lastPaymentMeta.method}
+                  {lastPaymentMeta.upiId ? ` (${lastPaymentMeta.upiId})` : ""} on{" "}
+                  {lastPaymentMeta.paidAt}
                 </p>
-                <p className="text-[11px]">{lastPaymentMeta.paidAt}</p>
               </div>
             )}
 
-            <div className="py-4 space-y-2.5 text-sm border-b border-slate-200 tabular-nums">
+            <div className="space-y-2 text-sm tabular-nums">
               <div className="flex justify-between">
-                <span className="text-slate-500">Roll ID</span>
-                <span className="font-mono font-bold text-slate-900">{receiptStudent.id}</span>
+                <span className="text-slate-500">Student Roll ID</span>
+                <span className="font-mono font-bold text-indigo-600">{receiptStudent.id}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Student Name</span>
-                <span className="font-bold text-slate-900">{receiptStudent.name}</span>
+                <span className="font-bold">{receiptStudent.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Mobile</span>
-                <span className="font-semibold text-slate-800">{receiptStudent.phone}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Attendance</span>
-                <span className="font-bold text-slate-800">
-                  {receiptStudent.presentDays}/{receiptStudent.totalDays} days (
-                  {Math.round((receiptStudent.presentDays / receiptStudent.totalDays) * 100)}%)
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Total Annual Fee</span>
-                <span className="font-bold text-slate-900">
+                <span className="text-slate-500">Annual Fee</span>
+                <span className="font-semibold">
                   ₹{receiptStudent.totalFee.toLocaleString("en-IN")}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Amount Paid</span>
-                <span className="font-extrabold text-emerald-700">
+                <span className="font-bold text-emerald-700">
                   ₹{receiptStudent.paidFee.toLocaleString("en-IN")}
                 </span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-dashed border-slate-200 text-base">
-                <span className="font-black text-slate-900">Balance Due</span>
+              <div className="flex justify-between border-t border-slate-200 pt-2 text-base">
+                <span className="font-extrabold">Balance Due</span>
                 <span className="font-black text-rose-600">
-                  ₹{Math.max(0, receiptStudent.totalFee - receiptStudent.paidFee).toLocaleString("en-IN")}
+                  ₹
+                  {Math.max(0, receiptStudent.totalFee - receiptStudent.paidFee).toLocaleString(
+                    "en-IN"
+                  )}
                 </span>
               </div>
             </div>
 
-            <div className="pt-5 flex gap-3 print:hidden">
+            <div className="flex gap-3 pt-2 print:hidden">
               <button
                 type="button"
                 onClick={() => window.print()}
                 className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm cursor-pointer"
               >
-                Download / Print PDF Receipt
+                Print / Save PDF
               </button>
               <button
                 type="button"
-                onClick={() => setReceiptStudent(null)}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm cursor-pointer"
+                onClick={() => {
+                  setReceiptStudent(null);
+                  setLastPaymentMeta(null);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-sm cursor-pointer"
               >
                 Close
               </button>
